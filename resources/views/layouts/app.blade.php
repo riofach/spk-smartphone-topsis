@@ -58,6 +58,12 @@
                         <a class="nav-link {{ request()->is('recommendation*') ? 'active' : '' }}"
                             href="{{ route('recommendation.form') }}">Rekomendasi</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('list-hp.index') ? 'active' : '' }}"
+                            href="{{ route('list-hp.index') }}">
+                            <i class="fas fa-list me-2"></i>ListHp
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

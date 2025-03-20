@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\SmartphoneController;
+use App\Http\Controllers\ListHpController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,3 +32,5 @@ Route::post('/recommendation', [SmartphoneController::class, 'getRecommendation'
 // Route tersembunyi untuk tambah smartphone - hanya yang tahu URL yang bisa akses
 Route::get('/admin-add-smartphone', [SmartphoneController::class, 'create'])->name('smartphones.create');
 Route::post('/admin-add-smartphone', [SmartphoneController::class, 'store'])->name('smartphones.store');
+
+Route::get('/list-hp', [ListHpController::class, 'index'])->name('list-hp.index');
