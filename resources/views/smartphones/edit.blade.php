@@ -54,10 +54,10 @@
 
                                 <div class="mb-3">
                                     <label for="image" class="form-label">
-                                        <i class="fas fa-image me-2"></i>Gambar (PNG, Maks. 1MB)
+                                        <i class="fas fa-image me-2"></i>Gambar Smartphone (PNG, Maks. 1MB)
                                     </label>
                                     <div class="image-container mb-2 text-center position-relative overflow-hidden rounded">
-                                        @if ($smartphone->image)
+                                        @if ($smartphone->image_url)
                                             <img src="{{ $smartphone->image_url }}" alt="{{ $smartphone->name }}"
                                                 class="img-fluid" style="max-height: 200px;" id="currentImage">
                                             <div class="image-overlay">
@@ -72,7 +72,7 @@
                                     </div>
                                     <div class="input-group">
                                         <input type="file" class="form-control @error('image') is-invalid @enderror"
-                                            id="image" name="image" accept=".png" onchange="previewImage(this)">
+                                            id="image" name="image" accept="image/*" onchange="previewImage(this)">
                                     </div>
                                     <div class="mt-2 text-center d-none" id="imagePreviewContainer">
                                         <div class="position-relative overflow-hidden rounded">
@@ -84,9 +84,10 @@
                                         </div>
                                     </div>
                                     @error('image')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
-                                    <small class="text-white">Format yang diizinkan: PNG dengan ukuran maksimal 1MB. Biarkan
+                                    <small class="text-white">Format yang diizinkan: JPG, PNG, GIF dengan ukuran maksimal
+                                        2MB. Biarkan
                                         kosong jika tidak ingin mengubah gambar.</small>
                                 </div>
 
@@ -97,6 +98,26 @@
                                     <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
                                         rows="4">{{ old('description', $smartphone->description) }}</textarea>
                                     @error('description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label for="release_year" class="form-label">Tahun Rilis</label>
+                                    <select class="form-select @error('release_year') is-invalid @enderror"
+                                        id="release_year" name="release_year" required>
+                                        <option value="" disabled>-- Pilih Tahun Rilis --</option>
+                                        @for ($year = $currentYear; $year >= $currentYear - 2; $year--)
+                                            <option value="{{ $year }}"
+                                                {{ old('release_year', $smartphone->release_year) == $year ? 'selected' : '' }}>
+                                                {{ $year }}</option>
+                                        @endfor
+                                    </select>
+                                    <div class="form-text text-warning">
+                                        <i class="fas fa-info-circle"></i> Hanya smartphone dengan tahun rilis maksimal 2
+                                        tahun terakhir yang dapat ditambahkan.
+                                    </div>
+                                    @error('release_year')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

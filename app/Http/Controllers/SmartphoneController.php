@@ -7,6 +7,7 @@ use App\Models\Smartphone;
 use App\Services\TopsisService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -26,11 +27,16 @@ class SmartphoneController extends Controller
     /**
      * Memastikan direktori untuk menyimpan gambar ada
      */
-    private function createDirectoryIfNotExists()
+    protected function createDirectoryIfNotExists()
     {
         $storagePath = storage_path('app/public/smartphones');
         if (!File::exists($storagePath)) {
             File::makeDirectory($storagePath, 0755, true);
+        }
+
+        $publicPath = public_path('images/smartphones');
+        if (!File::exists($publicPath)) {
+            File::makeDirectory($publicPath, 0755, true);
         }
 
         $publicPath = public_path('images');
@@ -49,7 +55,7 @@ class SmartphoneController extends Controller
      */
     public function index()
     {
-        $smartphones = Smartphone::orderBy('name')->get();
+        $smartphones = Smartphone::withinTwoYears()->paginate(10);
         $criteria = Criteria::all();
 
         return view('smartphones.index', compact('smartphones', 'criteria'));
@@ -60,7 +66,8 @@ class SmartphoneController extends Controller
      */
     public function create()
     {
-        return view('smartphones.create');
+        $currentYear = now()->year;
+        return view('smartphones.create', compact('currentYear'));
     }
 
     /**
@@ -68,24 +75,17 @@ class SmartphoneController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|integer|min:0',
-            'camera_score' => 'required|numeric|min:0|max:10',
-            'performance_score' => 'required|numeric|min:0|max:10',
-            'design_score' => 'required|numeric|min:0|max:10',
-            'battery_score' => 'required|numeric|min:0|max:10',
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:png|max:1024',
+            'price' => 'required|numeric|min:0',
+            'description' => 'required|string',
+            'camera_score' => 'required|numeric|min:1|max:10',
+            'performance_score' => 'required|numeric|min:1|max:10',
+            'design_score' => 'required|numeric|min:1|max:10',
+            'battery_score' => 'required|numeric|min:1|max:10',
+            'release_year' => 'required|integer|min:' . (now()->year - 2) . '|max:' . now()->year,
+            'image' => 'required|image|mimes:png|max:1024',
         ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $data = $request->all();
 
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -103,10 +103,30 @@ class SmartphoneController extends Controller
             // Simpan gambar
             $image->move($uploadPath, $imageName);
 
-            $data['image'] = $imageName;
+            Smartphone::create([
+                'name' => $request->name,
+                'price' => $request->price,
+                'description' => $request->description,
+                'camera_score' => $request->camera_score,
+                'performance_score' => $request->performance_score,
+                'design_score' => $request->design_score,
+                'battery_score' => $request->battery_score,
+                'release_year' => $request->release_year,
+                'image_url' => 'images/smartphones/' . $imageName,
+            ]);
+        } else {
+            Smartphone::create([
+                'name' => $request->name,
+                'price' => $request->price,
+                'description' => $request->description,
+                'camera_score' => $request->camera_score,
+                'performance_score' => $request->performance_score,
+                'design_score' => $request->design_score,
+                'battery_score' => $request->battery_score,
+                'release_year' => $request->release_year,
+                'image_url' => 'images/no-image.png',
+            ]);
         }
-
-        Smartphone::create($data);
 
         return redirect()->route('smartphones.index')
             ->with('success', 'Smartphone berhasil ditambahkan');
@@ -117,7 +137,8 @@ class SmartphoneController extends Controller
      */
     public function edit(Smartphone $smartphone)
     {
-        return view('smartphones.edit', compact('smartphone'));
+        $currentYear = now()->year;
+        return view('smartphones.edit', compact('smartphone', 'currentYear'));
     }
 
     /**
@@ -125,30 +146,36 @@ class SmartphoneController extends Controller
      */
     public function update(Request $request, Smartphone $smartphone)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|integer|min:0',
-            'camera_score' => 'required|numeric|min:0|max:10',
-            'performance_score' => 'required|numeric|min:0|max:10',
-            'design_score' => 'required|numeric|min:0|max:10',
-            'battery_score' => 'required|numeric|min:0|max:10',
-            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'description' => 'required|string',
+            'camera_score' => 'required|numeric|min:1|max:10',
+            'performance_score' => 'required|numeric|min:1|max:10',
+            'design_score' => 'required|numeric|min:1|max:10',
+            'battery_score' => 'required|numeric|min:1|max:10',
+            'release_year' => 'required|integer|min:' . (now()->year - 2) . '|max:' . now()->year,
             'image' => 'nullable|image|mimes:png|max:1024',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $data = $request->all();
+        // Update data dasar
+        $smartphone->update([
+            'name' => $request->name,
+            'price' => $request->price,
+            'description' => $request->description,
+            'camera_score' => $request->camera_score,
+            'performance_score' => $request->performance_score,
+            'design_score' => $request->design_score,
+            'battery_score' => $request->battery_score,
+            'release_year' => $request->release_year,
+        ]);
 
         // Handle image upload
         if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($smartphone->image) {
-                $oldImagePath = public_path('images/smartphones/' . $smartphone->image);
+            // Delete old image if exists and not default image
+            $oldImagePath = null;
+            if (!empty($smartphone->getRawOriginal('image_url')) && $smartphone->getRawOriginal('image_url') != 'images/no-image.png') {
+                $oldImagePath = public_path($smartphone->getRawOriginal('image_url'));
                 if (File::exists($oldImagePath)) {
                     File::delete($oldImagePath);
                 }
@@ -168,10 +195,11 @@ class SmartphoneController extends Controller
             // Simpan gambar
             $image->move($uploadPath, $imageName);
 
-            $data['image'] = $imageName;
+            // Update image_url
+            $smartphone->update([
+                'image_url' => 'images/smartphones/' . $imageName,
+            ]);
         }
-
-        $smartphone->update($data);
 
         return redirect()->route('smartphones.index')
             ->with('success', 'Smartphone berhasil diperbarui');
@@ -182,18 +210,31 @@ class SmartphoneController extends Controller
      */
     public function destroy(Smartphone $smartphone)
     {
-        // Delete image if exists
-        if ($smartphone->image) {
-            $imagePath = public_path('images/smartphones/' . $smartphone->image);
-            if (File::exists($imagePath)) {
-                File::delete($imagePath);
+        try {
+            // Dapatkan path gambar asli dari database (tanpa accessor)
+            $imagePath = $smartphone->getRawOriginal('image_url');
+
+            // Hapus gambar dari direktori jika bukan gambar default
+            if (!empty($imagePath) && $imagePath != 'images/no-image.png') {
+                $fullImagePath = public_path($imagePath);
+                if (file_exists($fullImagePath)) {
+                    unlink($fullImagePath);
+                    Log::info('Gambar berhasil dihapus: ' . $fullImagePath);
+                } else {
+                    Log::warning('Gambar tidak ditemukan: ' . $fullImagePath);
+                }
             }
+
+            // Hapus data smartphone
+            $smartphone->delete();
+
+            return redirect()->route('smartphones.index')
+                ->with('success', 'Smartphone berhasil dihapus');
+        } catch (\Exception $e) {
+            Log::error('Error saat menghapus smartphone: ' . $e->getMessage());
+            return redirect()->route('smartphones.index')
+                ->with('error', 'Terjadi kesalahan saat menghapus smartphone: ' . $e->getMessage());
         }
-
-        $smartphone->delete();
-
-        return redirect()->route('smartphones.index')
-            ->with('success', 'Smartphone berhasil dihapus');
     }
 
     /**
@@ -229,11 +270,47 @@ class SmartphoneController extends Controller
             $request->criteria_weights
         );
 
+        // Batasi hanya 6 rekomendasi teratas
+        // $recommendations = $recommendations->take(6);
+
         return view('smartphones.recommendation-results', [
             'recommendations' => $recommendations,
             'min_budget' => $request->min_budget,
             'max_budget' => $request->max_budget,
             'criteria_weights' => $request->criteria_weights,
         ]);
+    }
+
+    // Method to clean up obsolete smartphones (can be called from a scheduled command)
+    public function cleanupObsoleteSmartphones()
+    {
+        $obsoleteSmartphones = Smartphone::where('release_year', '<', now()->year - 2)->get();
+        $count = 0;
+
+        foreach ($obsoleteSmartphones as $smartphone) {
+            try {
+                // Dapatkan path gambar asli dari database (tanpa accessor)
+                $imagePath = $smartphone->getRawOriginal('image_url');
+
+                // Hapus gambar dari direktori jika bukan gambar default
+                if (!empty($imagePath) && $imagePath != 'images/no-image.png') {
+                    $fullImagePath = public_path($imagePath);
+                    if (file_exists($fullImagePath)) {
+                        unlink($fullImagePath);
+                        Log::info('Gambar smartphone usang berhasil dihapus: ' . $fullImagePath);
+                    } else {
+                        Log::warning('Gambar smartphone usang tidak ditemukan: ' . $fullImagePath);
+                    }
+                }
+
+                // Hapus data smartphone
+                $smartphone->delete();
+                $count++;
+            } catch (\Exception $e) {
+                Log::error('Error saat menghapus smartphone usang: ' . $e->getMessage());
+            }
+        }
+
+        return $count . ' smartphone usang telah dihapus.';
     }
 }

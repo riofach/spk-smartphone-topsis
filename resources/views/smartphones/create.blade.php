@@ -57,25 +57,44 @@
                                     </label>
                                     <div class="input-group">
                                         <input type="file" class="form-control @error('image') is-invalid @enderror"
-                                            id="image" name="image" accept=".png" onchange="previewImage(this)">
+                                            id="image" name="image" accept="image/png" onchange="previewImage(this)">
                                     </div>
                                     <div class="mt-2 text-center d-none" id="imagePreviewContainer">
-                                        <img id="imagePreview" src="#" alt="Preview" class="img-thumbnail"
+                                        <img id="imagePreview" src="#" alt="Preview" class="img-fluid rounded"
                                             style="max-height: 150px;">
                                     </div>
                                     @error('image')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
-                                    <small class="text-white">Format yang diizinkan: PNG dengan ukuran maksimal 1MB</small>
+                                    <small class="text-white">Format yang diizinkan: PNG dengan ukuran maksimal
+                                        1MB</small>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="description" class="form-label">
-                                        <i class="fas fa-align-left me-2"></i>Deskripsi
-                                    </label>
+                                <div class="form-group mb-4">
+                                    <label for="description" class="form-label">Deskripsi</label>
                                     <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
-                                        rows="4">{{ old('description') }}</textarea>
+                                        rows="4" required>{{ old('description') }}</textarea>
                                     @error('description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label for="release_year" class="form-label">Tahun Rilis</label>
+                                    <select class="form-select @error('release_year') is-invalid @enderror"
+                                        id="release_year" name="release_year" required>
+                                        <option value="" selected disabled>-- Pilih Tahun Rilis --</option>
+                                        @for ($year = $currentYear; $year >= $currentYear - 2; $year--)
+                                            <option value="{{ $year }}"
+                                                {{ old('release_year') == $year ? 'selected' : '' }}>{{ $year }}
+                                            </option>
+                                        @endfor
+                                    </select>
+                                    <div class="form-text text-warning">
+                                        <i class="fas fa-info-circle"></i> Hanya smartphone dengan tahun rilis maksimal 2
+                                        tahun terakhir yang dapat ditambahkan.
+                                    </div>
+                                    @error('release_year')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

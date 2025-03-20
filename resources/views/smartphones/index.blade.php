@@ -42,13 +42,17 @@
                                 <th class="text-center" width="70">
                                     <i class="fas fa-battery-full" data-bs-toggle="tooltip" title="Baterai"></i>
                                 </th>
+                                <th class="text-center" width="70">
+                                    <i class="fas fa-calendar" data-bs-toggle="tooltip" title="Tahun Rilis"></i>
+                                </th>
                                 <th class="text-center" width="120">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($smartphones as $index => $smartphone)
                                 <tr class="align-middle" data-aos="fade-up" data-aos-delay="{{ $index * 50 }}">
-                                    <td class="text-center">{{ $index + 1 }}</td>
+                                    <td class="text-center">
+                                        {{ ($smartphones->currentPage() - 1) * $smartphones->perPage() + $index + 1 }}</td>
                                     <td>
                                         <img src="{{ $smartphone->image_url }}" alt="{{ $smartphone->name }}"
                                             class="img-thumbnail" style="width: 50px; height: 50px; object-fit: contain;">
@@ -75,21 +79,31 @@
                                             {{ number_format($smartphone->battery_score, 1) }}
                                         </span>
                                     </td>
+                                    <td class="text-center">
+                                        {{ $smartphone->release_year }}
+                                    </td>
                                     <td>
                                         <div class="d-flex gap-2 justify-content-center">
                                             <a href="{{ route('smartphones.edit', $smartphone) }}"
-                                                class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Edit">
+                                                class="btn btn-sm btn-info" data-bs-toggle="tooltip"
+                                                title="Edit Smartphone">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form action="{{ route('smartphones.destroy', $smartphone) }}" method="POST"
-                                                class="delete-form">
+                                                class="d-inline delete-form">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="button" class="btn btn-sm btn-danger delete-btn"
-                                                    data-bs-toggle="tooltip" title="Hapus">
+                                                    data-bs-toggle="tooltip" title="Hapus Smartphone">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
+                                            <button class="btn btn-sm btn-secondary preview-btn"
+                                                data-img="{{ $smartphone->image_url }}"
+                                                data-name="{{ $smartphone->name }}" data-bs-toggle="tooltip"
+                                                title="Preview Gambar">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -98,6 +112,11 @@
                     </table>
                 </div>
             </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container mt-4" data-aos="fade-up">
+            {{ $smartphones->links('vendor.pagination.custom') }}
         </div>
     @endif
 
@@ -119,6 +138,24 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Image Modal -->
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-black" id="imagePreviewModalLabel">Preview Gambar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img id="previewImage" src="" alt="Preview Image" class="img-fluid"
+                        style="max-width: 100%;">
+                    <h5 id="previewTitle" class="text-black"></h5>
                 </div>
             </div>
         </div>
@@ -152,8 +189,140 @@
                 }
                 deleteModal.hide();
             });
+
+            // Preview image modal
+            const previewButtons = document.querySelectorAll('.preview-btn');
+            const imagePreviewModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+            const previewImage = document.getElementById('previewImage');
+            const previewTitle = document.getElementById('previewTitle');
+
+            previewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const imgSrc = this.getAttribute('data-img');
+                    const imgName = this.getAttribute('data-name');
+
+                    previewImage.src = imgSrc;
+                    previewTitle.textContent = imgName;
+                    imagePreviewModal.show();
+                });
+            });
+
+            // Fungsi Go to page
+            window.goToPage = function() {
+                const input = document.getElementById('goToPage');
+                const page = parseInt(input.value);
+                const maxPage = parseInt(input.max);
+
+                if (page && page > 0 && page <= maxPage) {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('page', page);
+                    window.location.href = currentUrl.toString();
+                } else {
+                    alert('Halaman tidak valid!');
+                }
+            }
+
+            // Handle Enter key pada input Go to page
+            document.getElementById('goToPage').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    goToPage();
+                }
+            });
         });
     </script>
+@endsection
+
+@section('styles')
+    <style>
+        /* Custom pagination style */
+        .pagination-arrow {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-arrow:hover:not(.disabled) {
+            background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+            transform: translateY(-2px);
+        }
+
+        .pagination-arrow.disabled {
+            background: rgba(30, 41, 59, 0.4);
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .pagination-number {
+            min-width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .pagination-number:hover:not(.active) {
+            background: #2d3748;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .pagination-number.active {
+            background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+            color: white;
+            font-weight: 600;
+        }
+
+        .pagination-ellipsis {
+            color: #e2e8f0;
+            padding: 0 4px;
+        }
+
+        .go-to-page {
+            background: rgba(30, 41, 59, 0.8);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .go-to-page input {
+            width: 60px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #2d3748;
+            color: #e2e8f0;
+            text-align: center;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .go-to-page button {
+            background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+            border: none;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .go-to-page button:hover {
+            transform: translateX(2px);
+        }
+    </style>
 @endsection
 
 @php

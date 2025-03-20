@@ -39,7 +39,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{{ url('/') }}">
-                <i class="fas fa-mobile-alt me-2"></i>SolusiHp
+                <i class="fas fa-mobile-alt me-2"></i>RecomHp
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,8 +89,8 @@
             <div class="row">
                 <div class="col-md-12">
                     <p class="mb-0">
-                        <span class="text-gradient">SPK Pemilihan Smartphone</span>
-                        <span class="text-muted">Menggunakan Metode TOPSIS &copy; {{ date('Y') }}</span>
+                        <span class="text-gradient">RecomHp</span>
+                        <span class="text-muted">Metode TOPSIS &copy; {{ date('Y') }}</span>
                     </p>
                 </div>
             </div>

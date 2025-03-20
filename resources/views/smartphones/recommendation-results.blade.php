@@ -54,21 +54,26 @@
                 Anda. Silakan ubah kriteria pencarian.</p>
         </div>
     @else
-        <div class="row">
+        <!-- Baris pertama: 3 smartphone teratas -->
+        <div class="row" data-aos="fade-up">
             @foreach ($recommendations as $index => $recommendation)
                 @php $smartphone = $recommendation['smartphone']; @endphp
                 <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
                     <div class="card h-100 {{ $index === 0 ? 'border-primary' : '' }}" id="card-{{ $index }}">
                         @if ($index === 0)
                             <div class="ribbon ribbon-top-right"><span>Terbaik</span></div>
+                        @elseif ($index === 1)
+                            <div class="ribbon ribbon-silver ribbon-top-right"><span>Terbaik Kedua</span></div>
+                        @elseif ($index === 2)
+                            <div class="ribbon ribbon-bronze ribbon-top-right"><span>Terbaik Ketiga</span></div>
                         @endif
 
                         <div class="card-header {{ $index === 0 ? 'bg-primary text-white' : 'bg-dark' }}">
                             <h5 class="card-title mb-0">
-                                @if ($index < 3)
+                                <div class="medal-icon medal-{{ $index }}">
                                     <i
                                         class="fas fa-medal me-2 {{ $index === 0 ? 'text-warning' : ($index === 1 ? 'text-light' : 'text-danger') }}"></i>
-                                @endif
+                                </div>
                                 {{ $smartphone->name }}
                             </h5>
                         </div>
@@ -124,18 +129,42 @@
                         </div>
                     </div>
                 </div>
-
-                @if (($index + 1) % 3 == 0)
+            @endforeach
         </div>
-        <div class="row">
-    @endif
-    @endforeach
-    </div>
     @endif
 @endsection
 
 @section('styles')
     <style>
+        /* Medal Icons */
+        .medal-icon {
+            display: inline-block;
+            position: relative;
+        }
+
+        .medal-icon .fa-medal {
+            font-size: 1.2rem;
+        }
+
+        .medal-0 .fa-medal {
+            color: #ffd700 !important;
+            /* Gold */
+            filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));
+        }
+
+        .medal-1 .fa-medal {
+            color: #c0c0c0 !important;
+            /* Silver */
+            filter: drop-shadow(0 0 3px rgba(192, 192, 192, 0.6));
+        }
+
+        .medal-2 .fa-medal {
+            color: #cd7f32 !important;
+            /* Bronze */
+            filter: drop-shadow(0 0 3px rgba(205, 127, 50, 0.6));
+        }
+
+        /* Ribbon styling */
         .ribbon {
             width: 150px;
             height: 150px;
@@ -158,6 +187,14 @@
             text-align: center;
             transform: rotate(45deg);
             animation: pulse 2s infinite;
+        }
+
+        .ribbon-silver span {
+            background: linear-gradient(135deg, #c0c0c0, #a9a9a9);
+        }
+
+        .ribbon-bronze span {
+            background: linear-gradient(135deg, #cd7f32, #a05a2c);
         }
 
         .ribbon-top-right {
@@ -203,15 +240,46 @@
 
         #card-0 {
             animation: glow 2s infinite alternate;
+            border-color: #ffd700 !important;
+        }
+
+        #card-1 {
+            border-color: #c0c0c0;
+            animation: glowSilver 2s infinite alternate;
+        }
+
+        #card-2 {
+            border-color: #cd7f32;
+            animation: glowBronze 2s infinite alternate;
         }
 
         @keyframes glow {
             from {
-                box-shadow: 0 0 5px -5px var(--primary);
+                box-shadow: 0 0 5px -5px #ffd700;
             }
 
             to {
-                box-shadow: 0 0 20px 5px var(--primary);
+                box-shadow: 0 0 20px 5px #ffd700;
+            }
+        }
+
+        @keyframes glowSilver {
+            from {
+                box-shadow: 0 0 5px -5px #c0c0c0;
+            }
+
+            to {
+                box-shadow: 0 0 15px 3px #c0c0c0;
+            }
+        }
+
+        @keyframes glowBronze {
+            from {
+                box-shadow: 0 0 5px -5px #cd7f32;
+            }
+
+            to {
+                box-shadow: 0 0 12px 2px #cd7f32;
             }
         }
     </style>

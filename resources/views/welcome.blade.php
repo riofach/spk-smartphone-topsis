@@ -82,10 +82,10 @@
         }
 
         /* .feature-card:hover .feature-icon {
-                        background: #e94560;
-                        color: white;
-                        transform: rotateY(180deg);
-                    } */
+                                                        background: #e94560;
+                                                        color: white;
+                                                        transform: rotateY(180deg);
+                                                    } */
 
         .btn-custom-primary {
             background-color: #e94560;
@@ -133,6 +133,32 @@
         .topsis-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Disclaimer Card Styling */
+        .disclaimer-card {
+            background-color: rgba(30, 41, 59, 0.9);
+            border-left: 4px solid #e94560;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .disclaimer-card:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .disclaimer-content {
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .disclaimer-content p {
+            margin-bottom: 0.75rem;
+        }
+
+        .disclaimer-content strong {
+            color: #60a5fa;
         }
     </style>
 @endsection
@@ -215,6 +241,26 @@
                         onclick="location.href='{{ route('recommendation.form') }}';" style="width: fit-content;">
                         <i class="fas fa-search me-2"></i> Coba Sekarang
                     </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disclaimer Section -->
+        <div class="row mb-5">
+            <div class="col-md-12" data-aos="fade-up">
+                <div class="card shadow disclaimer-card p-4">
+                    <h3 class="mb-3 fw-bold"><i class="fas fa-info-circle me-2"></i>Disclaimer</h3>
+                    <div class="disclaimer-content">
+                        <p><strong>Tentang Penilaian Kriteria:</strong> Skor kriteria kamera, performa, baterai, dan desain
+                            pada sistem ini adalah berdasarkan penilaian dari tim kami dengan mempertimbangkan spesifikasi
+                            teknis dan pengalaman pengguna.</p>
+                        <p><strong>Smartphone Rekomendasi:</strong> Sistem ini hanya merekomendasikan smartphone yang resmi
+                            dijual di Indonesia dan dirilis dalam 2 tahun terakhir untuk memastikan rekomendasi yang relevan
+                            dan up-to-date.</p>
+                        <p><strong>Penggunaan Data:</strong> Hasil rekomendasi bersifat objektif berdasarkan kriteria yang
+                            ditentukan, tetapi keputusan akhir tetap berada di tangan pengguna sesuai kebutuhan spesifik.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

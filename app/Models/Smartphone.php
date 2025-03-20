@@ -12,12 +12,22 @@ class Smartphone extends Model
     protected $fillable = [
         'name',
         'price',
+        'image_url',
+        'description',
         'camera_score',
         'performance_score',
         'design_score',
         'battery_score',
-        'description',
-        'image',
+        'release_year',
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:0',
+        'camera_score' => 'decimal:1',
+        'performance_score' => 'decimal:1',
+        'design_score' => 'decimal:1',
+        'battery_score' => 'decimal:1',
+        'release_year' => 'integer',
     ];
 
     /**
@@ -36,16 +46,30 @@ class Smartphone extends Model
     }
 
     /**
-     * Get image URL attribute
+     * Get the image URL attribute
      *
      * @return string
      */
-    public function getImageUrlAttribute(): string
+    public function getImageUrlAttribute()
     {
-        if (!$this->image) {
+        if (empty($this->attributes['image_url'])) {
             return asset('images/no-image.png');
         }
 
-        return asset('images/smartphones/' . $this->image);
+        return asset($this->attributes['image_url']);
+    }
+
+    // Scope for filtering only smartphones released within the last 2 years
+    public function scopeWithinTwoYears($query)
+    {
+        $currentYear = now()->year;
+        return $query->where('release_year', '>=', $currentYear - 2);
+    }
+
+    // Check if the smartphone is obsolete (more than 2 years old)
+    public function isObsolete()
+    {
+        $currentYear = now()->year;
+        return $this->release_year < ($currentYear - 2);
     }
 }

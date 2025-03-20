@@ -108,6 +108,34 @@
             </div>
         </div>
     </div>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-lg recommendation-card">
+                    <div class="card-header bg-gradient text-white">
+                        <h4 class="mb-0">Form Rekomendasi Smartphone</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info" role="alert">
+                            <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Informasi Rekomendasi</h5>
+                            <p>Sistem ini akan merekomendasikan smartphone berdasarkan preferensi Anda menggunakan metode
+                                TOPSIS.</p>
+                            <hr>
+                            <p class="mb-0">
+                                <i class="fas fa-check-circle me-1"></i> Skor kriteria (kamera, performa, baterai, desain)
+                                berdasarkan penilaian tim kami.<br>
+                                <i class="fas fa-check-circle me-1"></i> Hanya smartphone yang dirilis dalam 2 tahun
+                                terakhir yang direkomendasikan.<br>
+                                <i class="fas fa-check-circle me-1"></i> Smartphone yang direkomendasikan adalah yang resmi
+                                dijual di Indonesia.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
