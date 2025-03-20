@@ -4,36 +4,40 @@
 
 @section('content')
     <div class="row mb-4">
-        <div class="col-md-8">
-            <h2>Hasil Rekomendasi Smartphone</h2>
-            <p class="text-muted">Hasil perhitungan TOPSIS berdasarkan kriteria yang Anda pilih.</p>
+        <div class="col-md-8" data-aos="fade-right">
+            <h2 class="fw-bold text-gradient">Hasil Rekomendasi Smartphone</h2>
+            <p class="text-white">Hasil perhitungan TOPSIS berdasarkan kriteria yang Anda pilih.</p>
         </div>
-        <div class="col-md-4 text-end">
+        <div class="col-md-4 text-end" data-aos="fade-left">
             <a href="{{ route('recommendation.form') }}" class="btn btn-primary">
-                <i class="fas fa-redo"></i> Cari Rekomendasi Lain
+                <i class="fas fa-redo me-2"></i> Cari Rekomendasi Lain
             </a>
         </div>
     </div>
 
-    <div class="row mb-3">
+    <div class="row mb-4" data-aos="fade-up">
         <div class="col-md-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="card-title mb-0">Kriteria Pencarian</h5>
+            <div class="card shadow">
+                <div class="card-header bg-dark">
+                    <h5 class="card-title mb-0"><i class="fas fa-filter me-2"></i>Kriteria Pencarian</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4">
-                            <p class="mb-1"><strong>Budget:</strong></p>
-                            <p>Rp {{ number_format($min_budget, 0, ',', '.') }} - Rp
+                            <p class="mb-1"><strong><i class="fas fa-money-bill-wave me-2"></i>Budget:</strong></p>
+                            <p class="text-gradient fw-bold">Rp {{ number_format($min_budget, 0, ',', '.') }} - Rp
                                 {{ number_format($max_budget, 0, ',', '.') }}</p>
                         </div>
                         <div class="col-md-8">
-                            <p class="mb-1"><strong>Bobot Kriteria:</strong></p>
+                            <p class="mb-1"><strong><i class="fas fa-sliders-h me-2"></i>Bobot Kriteria:</strong></p>
                             <div class="row">
                                 @foreach ($criteria_weights as $code => $weight)
                                     <div class="col-md-3 mb-2">
-                                        <span class="badge bg-primary">{{ ucfirst($code) }}: {{ $weight }}</span>
+                                        <span class="badge bg-primary p-2">
+                                            <i
+                                                class="fas fa-{{ $code == 'camera' ? 'camera' : ($code == 'performance' ? 'microchip' : ($code == 'design' ? 'palette' : 'battery-full')) }} me-1"></i>
+                                            {{ ucfirst($code) }}: {{ $weight }}
+                                        </span>
                                     </div>
                                 @endforeach
                             </div>
@@ -45,69 +49,73 @@
     </div>
 
     @if ($recommendations->isEmpty())
-        <div class="alert alert-info">
-            <p class="mb-0">Tidak ditemukan smartphone yang sesuai dengan kriteria Anda. Silakan ubah kriteria pencarian.
-            </p>
+        <div class="alert alert-info" data-aos="fade-up">
+            <p class="mb-0"><i class="fas fa-info-circle me-2"></i>Tidak ditemukan smartphone yang sesuai dengan kriteria
+                Anda. Silakan ubah kriteria pencarian.</p>
         </div>
     @else
         <div class="row">
             @foreach ($recommendations as $index => $recommendation)
                 @php $smartphone = $recommendation['smartphone']; @endphp
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 {{ $index === 0 ? 'border-primary' : '' }}">
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
+                    <div class="card h-100 {{ $index === 0 ? 'border-primary' : '' }}" id="card-{{ $index }}">
                         @if ($index === 0)
                             <div class="ribbon ribbon-top-right"><span>Terbaik</span></div>
                         @endif
 
-                        <div class="card-header {{ $index === 0 ? 'bg-primary text-white' : 'bg-light' }}">
-                            <h5 class="card-title mb-0">{{ $smartphone->name }}</h5>
+                        <div class="card-header {{ $index === 0 ? 'bg-primary text-white' : 'bg-dark' }}">
+                            <h5 class="card-title mb-0">
+                                @if ($index < 3)
+                                    <i
+                                        class="fas fa-medal me-2 {{ $index === 0 ? 'text-warning' : ($index === 1 ? 'text-light' : 'text-danger') }}"></i>
+                                @endif
+                                {{ $smartphone->name }}
+                            </h5>
                         </div>
 
-                        @if ($smartphone->image_url)
-                            <img src="{{ $smartphone->image_url }}" class="card-img-top p-3" alt="{{ $smartphone->name }}"
-                                style="height: 200px; object-fit: contain;">
-                        @else
-                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light"
-                                style="height: 200px;">
-                                <i class="fas fa-mobile-alt fa-4x text-muted"></i>
-                            </div>
-                        @endif
+                        <div class="position-relative overflow-hidden" style="height: 200px;">
+                            <img src="{{ $smartphone->image_url }}" class="card-img-top" alt="{{ $smartphone->name }}"
+                                style="height: 100%; object-fit: contain; transition: transform 0.5s ease;">
+                        </div>
 
                         <div class="card-body">
-                            <h5 class="card-title text-primary mb-3">Rp
+                            <h5 class="card-title text-gradient mb-3 fw-bold">Rp
                                 {{ number_format($smartphone->price, 0, ',', '.') }}</h5>
 
                             <p class="card-text">{{ $smartphone->description ?: 'Tidak ada deskripsi' }}</p>
 
                             <div class="mt-3">
-                                <p class="mb-1"><strong>Skor TOPSIS:
-                                        {{ number_format($recommendation['score'] * 100, 2) }}%</strong></p>
-                                <div class="progress mb-3">
-                                    <div class="progress-bar bg-success" role="progressbar"
+                                <p class="mb-1 fw-bold">
+                                    <i class="fas fa-star me-2 text-warning"></i>
+                                    Skor TOPSIS: <span
+                                        class="text-gradient">{{ number_format($recommendation['score'] * 100, 2) }}%</span>
+                                </p>
+                                <div class="progress mb-3" style="height: 8px;">
+                                    <div class="progress-bar" role="progressbar"
                                         style="width: {{ $recommendation['score'] * 100 }}%"
                                         aria-valuenow="{{ $recommendation['score'] * 100 }}" aria-valuemin="0"
                                         aria-valuemax="100"></div>
                                 </div>
 
-                                <p class="mb-1"><strong>Spesifikasi:</strong></p>
+                                <p class="mb-1 fw-bold"><i class="fas fa-info-circle me-2"></i>Spesifikasi:</p>
                                 <ul class="list-group list-group-flush mb-3">
                                     <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                        <span>Kamera</span>
+                                        <span><i class="fas fa-camera me-2"></i>Kamera</span>
                                         <span
                                             class="badge bg-secondary">{{ number_format($smartphone->camera_score, 1) }}/10</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                        <span>Performa</span>
+                                        <span><i class="fas fa-microchip me-2"></i>Performa</span>
                                         <span
                                             class="badge bg-secondary">{{ number_format($smartphone->performance_score, 1) }}/10</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                        <span>Desain</span>
+                                        <span><i class="fas fa-palette me-2"></i>Desain</span>
                                         <span
                                             class="badge bg-secondary">{{ number_format($smartphone->design_score, 1) }}/10</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                        <span>Baterai</span>
+                                        <span><i class="fas fa-battery-full me-2"></i>Baterai</span>
                                         <span
                                             class="badge bg-secondary">{{ number_format($smartphone->battery_score, 1) }}/10</span>
                                     </li>
@@ -133,15 +141,7 @@
             height: 150px;
             overflow: hidden;
             position: absolute;
-        }
-
-        .ribbon::before,
-        .ribbon::after {
-            position: absolute;
-            z-index: -1;
-            content: '';
-            display: block;
-            border: 5px solid #0d6efd;
+            z-index: 10;
         }
 
         .ribbon span {
@@ -149,14 +149,15 @@
             display: block;
             width: 225px;
             padding: 8px 0;
-            background-color: #0d6efd;
-            box-shadow: 0 5px 10px rgba(0, 0, 0, .1);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
             color: #fff;
             font-size: 14px;
-            font-weight: bold;
-            text-shadow: 0 1px 1px rgba(0, 0, 0, .2);
+            font-weight: 700;
             text-transform: uppercase;
             text-align: center;
+            transform: rotate(45deg);
+            animation: pulse 2s infinite;
         }
 
         .ribbon-top-right {
@@ -185,5 +186,57 @@
             top: 30px;
             transform: rotate(45deg);
         }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(109, 40, 217, 0.5);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(109, 40, 217, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(109, 40, 217, 0);
+            }
+        }
+
+        #card-0 {
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 5px -5px var(--primary);
+            }
+
+            to {
+                box-shadow: 0 0 20px 5px var(--primary);
+            }
+        }
     </style>
+@endsection
+
+@section('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effect to cards
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    const img = this.querySelector('.card-img-top');
+                    if (img) {
+                        img.style.transform = 'scale(1.1)';
+                    }
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    const img = this.querySelector('.card-img-top');
+                    if (img) {
+                        img.style.transform = 'scale(1)';
+                    }
+                });
+            });
+        });
+    </script>
 @endsection
