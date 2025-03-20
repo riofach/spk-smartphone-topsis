@@ -2,6 +2,12 @@
 
 Sistem Pendukung Keputusan (SPK) untuk membantu memilih smartphone berdasarkan budget dan kriteria kebutuhan menggunakan metode TOPSIS (Technique for Order Preference by Similarity to Ideal Solution).
 
+## Kelompok
+
+-   Fachrio Raditya
+-   Miftahudin Aldi Saputra
+-   Wahyu Nayoga
+
 ## Daftar Isi
 
 -   [Fitur](#fitur)
