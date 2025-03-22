@@ -57,23 +57,11 @@ class SmartphoneController extends Controller
     {
         $query = Smartphone::withinTwoYears();
 
-        // Pencarian berdasarkan nama atau processor
-        if ($request->has('search')) {
-            $searchTerm = $request->search;
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('processor', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('description', 'like', '%' . $searchTerm . '%');
-            });
-        }
-
         // Pencarian real-time untuk AJAX
         if ($request->has('query')) {
             $searchTerm = $request->input('query');
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('processor', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('description', 'like', '%' . $searchTerm . '%');
+                $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($searchTerm) . '%']);
             });
 
             // Terapkan filter lainnya untuk query AJAX juga

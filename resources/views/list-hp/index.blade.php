@@ -20,8 +20,7 @@
                             <label for="search" class="form-label"><i class="fas fa-search me-2"></i>Cari
                                 Smartphone</label>
                             <input type="text" class="form-control" id="search" name="search"
-                                placeholder="Cari nama, prosesor, atau deskripsi" value="{{ request('search') }}"
-                                autocomplete="off">
+                                placeholder="Cari nama smartphone..." value="{{ request('search') }}" autocomplete="off">
                             <div class="search-results-container d-none">
                                 <div id="searchResults" class="p-2"></div>
                             </div>

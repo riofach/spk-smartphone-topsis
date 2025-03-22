@@ -11,16 +11,16 @@
                 <div class="row">
                     <div class="col-md-5 text-center mb-4">
                         <img id="detailImage" src="" alt="Detail Image" class="img-fluid mb-3 rounded shadow"
-                            style="max-width: 200px;">
+                            style="max-width: 300px;">
                         <h4 id="detailName" class="text-gradient mb-3"></h4>
-                        <span id="detailBrand" class="badge bg-primary mb-2 d-block mx-auto"
-                            style="max-width: fit-content;"></span>
+                        {{-- <span id="detailBrand" class="badge bg-primary mb-2 d-block mx-auto"
+                            style="max-width: fit-content;"></span> --}}
                         <h5 id="detailPrice" class="text-warning"></h5>
                     </div>
                     <div class="col-md-7">
                         <div class="card mb-3" style="background-color: rgba(31, 41, 55, 0.5);">
                             <div class="card-header bg-dark">
-                                <h5 class="mb-0 text-gradient">Visualisasi Skor</h5>
+                                <h5 class="mb-0 text-white">Visualisasi Skor</h5>
                             </div>
                             <div class="card-body text-center p-3">
                                 <canvas id="radarChart" width="250" height="250"></canvas>
@@ -151,8 +151,8 @@
             // Set data detail smartphone
             document.getElementById('detailImage').src = smartphone.image_url;
             document.getElementById('detailName').textContent = smartphone.name;
-            document.getElementById('detailBrand').textContent = smartphone.brand ||
-                'Not specified';
+            // document.getElementById('detailBrand').textContent = smartphone.brand ||
+            //     'Not specified';
             document.getElementById('detailPrice').textContent =
                 `Rp ${new Intl.NumberFormat('id-ID').format(smartphone.price)}`;
             document.getElementById('detailYear').textContent = smartphone.release_year || 'N/A';
