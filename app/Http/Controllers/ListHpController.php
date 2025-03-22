@@ -13,8 +13,14 @@ class ListHpController extends Controller
         $query = Smartphone::withinTwoYears();
 
         // Pencarian real-time untuk AJAX
-        if ($request->has('query')) {
-            $searchTerm = $request->input('query');
+        if ($request->ajax() || $request->wantsJson()) {
+            Log::info('AJAX request received', [
+                'query' => $request->all(),
+                'is_ajax' => $request->ajax(),
+                'wants_json' => $request->wantsJson()
+            ]);
+
+            $searchTerm = $request->input('search');
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', '%' . $searchTerm . '%')
                     ->orWhere('processor', 'like', '%' . $searchTerm . '%')

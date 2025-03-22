@@ -68,7 +68,7 @@
                                     @enderror
                                     <small class="text-white">Format yang diizinkan: semua format gambar dengan ukuran
                                         maksimal
-                                        2MB</small>
+                                        1MB</small>
                                 </div>
 
                                 <div class="form-group mb-4">
