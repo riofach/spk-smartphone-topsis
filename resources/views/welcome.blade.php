@@ -82,10 +82,10 @@
         }
 
         /* .feature-card:hover .feature-icon {
-                                                        background: #e94560;
-                                                        color: white;
-                                                        transform: rotateY(180deg);
-                                                    } */
+                                                                background: #e94560;
+                                                                color: white;
+                                                                transform: rotateY(180deg);
+                                                            } */
 
         .btn-custom-primary {
             background-color: #e94560;

@@ -121,6 +121,111 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                                <div class="card mb-4">
+                                    <div class="card-header bg-dark">
+                                        <h5 class="mb-0 text-gradient">Spesifikasi Teknis</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="ram" class="form-label">
+                                                        <i class="fas fa-memory me-2"></i>RAM (GB) <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number"
+                                                        class="form-control @error('ram') is-invalid @enderror"
+                                                        id="ram" name="ram"
+                                                        value="{{ old('ram', $smartphone->ram) }}" min="1"
+                                                        required>
+                                                    @error('ram')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="storage" class="form-label">
+                                                        <i class="fas fa-hdd me-2"></i>Storage (GB) <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number"
+                                                        class="form-control @error('storage') is-invalid @enderror"
+                                                        id="storage" name="storage"
+                                                        value="{{ old('storage', $smartphone->storage) }}" min="8"
+                                                        required>
+                                                    @error('storage')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="processor" class="form-label">
+                                                <i class="fas fa-microchip me-2"></i>Processor <span
+                                                    class="text-danger">*</span>
+                                            </label>
+                                            <input type="text"
+                                                class="form-control @error('processor') is-invalid @enderror"
+                                                id="processor" name="processor"
+                                                value="{{ old('processor', $smartphone->processor) }}" required>
+                                            @error('processor')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="battery" class="form-label">
+                                                        <i class="fas fa-battery-full me-2"></i>Baterai (mAh) <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number"
+                                                        class="form-control @error('battery') is-invalid @enderror"
+                                                        id="battery" name="battery"
+                                                        value="{{ old('battery', $smartphone->battery) }}" min="1000"
+                                                        required>
+                                                    @error('battery')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="camera" class="form-label">
+                                                        <i class="fas fa-camera me-2"></i>Kamera (MP) <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number"
+                                                        class="form-control @error('camera') is-invalid @enderror"
+                                                        id="camera" name="camera"
+                                                        value="{{ old('camera', $smartphone->camera) }}" min="5"
+                                                        required>
+                                                    @error('camera')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="screen_size" class="form-label">
+                                                        <i class="fas fa-mobile-alt me-2"></i>Ukuran Layar (inch) <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number" step="0.1"
+                                                        class="form-control @error('screen_size') is-invalid @enderror"
+                                                        id="screen_size" name="screen_size"
+                                                        value="{{ old('screen_size', $smartphone->screen_size) }}"
+                                                        min="3" max="10" required>
+                                                    @error('screen_size')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="col-md-6" data-aos="fade-left" data-aos-delay="300">

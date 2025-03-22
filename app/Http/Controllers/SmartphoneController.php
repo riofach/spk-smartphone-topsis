@@ -53,12 +53,160 @@ class SmartphoneController extends Controller
     /**
      * Menampilkan daftar smartphone
      */
-    public function index()
+    public function index(Request $request)
     {
-        $smartphones = Smartphone::withinTwoYears()->paginate(10);
+        $query = Smartphone::withinTwoYears();
+
+        // Pencarian berdasarkan nama atau processor
+        if ($request->has('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('processor', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('description', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        // Pencarian real-time untuk AJAX
+        if ($request->has('query')) {
+            $searchTerm = $request->input('query');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('processor', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('description', 'like', '%' . $searchTerm . '%');
+            });
+
+            // Terapkan filter lainnya untuk query AJAX juga
+            if ($request->has('min_price') && $request->min_price) {
+                $query->where('price', '>=', $request->min_price);
+            }
+
+            if ($request->has('max_price') && $request->max_price) {
+                $query->where('price', '<=', $request->max_price);
+            }
+
+            if ($request->has('ram') && $request->ram) {
+                $query->where('ram', '=', $request->ram);
+            }
+
+            if ($request->has('storage') && $request->storage) {
+                $query->where('storage', '=', $request->storage);
+            }
+
+            if ($request->has('release_year') && $request->release_year) {
+                $query->where('release_year', '=', $request->release_year);
+            }
+
+            // Terapkan sort untuk query AJAX
+            if ($request->has('sort')) {
+                switch ($request->sort) {
+                    case 'price_low_high':
+                        $query->orderBy('price', 'asc');
+                        break;
+                    case 'price_high_low':
+                        $query->orderBy('price', 'desc');
+                        break;
+                    case 'latest':
+                    default:
+                        $query->latest();
+                        break;
+                }
+            } else {
+                $query->latest();
+            }
+
+            // Batasi hasil untuk pencarian real-time
+            $smartphones = $query->limit(20)->get();
+
+            // Tambahkan URL ke data
+            $smartphones->transform(function ($smartphone) {
+                $smartphone->edit_url = route('smartphones.edit', $smartphone->id);
+                $smartphone->delete_url = route('smartphones.destroy', $smartphone->id);
+                return $smartphone;
+            });
+
+            // Pastikan response JSON dengan header yang benar
+            try {
+                return response()->json([
+                    'smartphones' => $smartphones
+                ], 200, ['Content-Type' => 'application/json']);
+            } catch (\Exception $e) {
+                Log::error('Error pada pencarian real-time: ' . $e->getMessage());
+                return response()->json([
+                    'error' => 'Terjadi kesalahan pada server',
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+
+        // Filter berdasarkan range harga
+        if ($request->has('min_price') && $request->min_price) {
+            $query->where('price', '>=', $request->min_price);
+        }
+
+        if ($request->has('max_price') && $request->max_price) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        // Filter berdasarkan RAM
+        if ($request->has('ram') && $request->ram) {
+            $query->where('ram', '=', $request->ram);
+        }
+
+        // Filter berdasarkan Storage
+        if ($request->has('storage') && $request->storage) {
+            $query->where('storage', '=', $request->storage);
+        }
+
+        // Filter berdasarkan tahun rilis
+        if ($request->has('release_year') && $request->release_year) {
+            $query->where('release_year', '=', $request->release_year);
+        }
+
+        // Sort by price ASC/DESC atau latest
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'price_low_high':
+                    $query->orderBy('price', 'asc');
+                    break;
+                case 'price_high_low':
+                    $query->orderBy('price', 'desc');
+                    break;
+                case 'latest':
+                default:
+                    $query->latest();
+                    break;
+            }
+        } else {
+            $query->latest();
+        }
+
+        $smartphones = $query->paginate(10)->withQueryString();
         $criteria = Criteria::all();
 
-        return view('smartphones.index', compact('smartphones', 'criteria'));
+        // Get unique values for filters
+        $ramOptions = Smartphone::select('ram')->distinct()->orderBy('ram')->pluck('ram');
+        $storageOptions = Smartphone::select('storage')->distinct()->orderBy('storage')->pluck('storage');
+        $releaseYearOptions = Smartphone::select('release_year')->distinct()->orderBy('release_year', 'desc')->pluck('release_year');
+
+        // For autocomplete suggestions
+        $suggestions = null;
+        if ($request->has('suggest') && $request->suggest) {
+            $suggestions = Smartphone::where('name', 'like', '%' . $request->suggest . '%')
+                ->orWhere('processor', 'like', '%' . $request->suggest . '%')
+                ->limit(5)
+                ->get(['id', 'name', 'processor', 'image_url']);
+
+            return response()->json($suggestions);
+        }
+
+        return view('smartphones.index', compact(
+            'smartphones',
+            'criteria',
+            'ramOptions',
+            'storageOptions',
+            'releaseYearOptions'
+        ));
     }
 
     /**
@@ -85,6 +233,12 @@ class SmartphoneController extends Controller
             'battery_score' => 'required|numeric|min:1|max:10',
             'release_year' => 'required|integer|min:' . (now()->year - 2) . '|max:' . now()->year,
             'image' => 'required|image|mimes:png|max:1024',
+            'ram' => 'required|integer|min:1',
+            'storage' => 'required|integer|min:8',
+            'processor' => 'required|string',
+            'battery' => 'required|integer|min:1000',
+            'camera' => 'required|integer|min:5',
+            'screen_size' => 'required|numeric|min:3|max:10',
         ]);
 
         // Handle image upload
@@ -113,6 +267,12 @@ class SmartphoneController extends Controller
                 'battery_score' => $request->battery_score,
                 'release_year' => $request->release_year,
                 'image_url' => 'images/smartphones/' . $imageName,
+                'ram' => $request->ram,
+                'storage' => $request->storage,
+                'processor' => $request->processor,
+                'battery' => $request->battery,
+                'camera' => $request->camera,
+                'screen_size' => $request->screen_size,
             ]);
         } else {
             Smartphone::create([
@@ -125,6 +285,12 @@ class SmartphoneController extends Controller
                 'battery_score' => $request->battery_score,
                 'release_year' => $request->release_year,
                 'image_url' => 'images/no-image.png',
+                'ram' => $request->ram,
+                'storage' => $request->storage,
+                'processor' => $request->processor,
+                'battery' => $request->battery,
+                'camera' => $request->camera,
+                'screen_size' => $request->screen_size,
             ]);
         }
 
@@ -156,6 +322,12 @@ class SmartphoneController extends Controller
             'battery_score' => 'required|numeric|min:1|max:10',
             'release_year' => 'required|integer|min:' . (now()->year - 2) . '|max:' . now()->year,
             'image' => 'nullable|image|mimes:png|max:1024',
+            'ram' => 'required|integer|min:1',
+            'storage' => 'required|integer|min:8',
+            'processor' => 'required|string',
+            'battery' => 'required|integer|min:1000',
+            'camera' => 'required|integer|min:5',
+            'screen_size' => 'required|numeric|min:3|max:10',
         ]);
 
         // Update data dasar
@@ -168,6 +340,12 @@ class SmartphoneController extends Controller
             'design_score' => $request->design_score,
             'battery_score' => $request->battery_score,
             'release_year' => $request->release_year,
+            'ram' => $request->ram,
+            'storage' => $request->storage,
+            'processor' => $request->processor,
+            'battery' => $request->battery,
+            'camera' => $request->camera,
+            'screen_size' => $request->screen_size,
         ]);
 
         // Handle image upload

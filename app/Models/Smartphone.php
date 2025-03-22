@@ -19,6 +19,12 @@ class Smartphone extends Model
         'design_score',
         'battery_score',
         'release_year',
+        'ram',
+        'storage',
+        'processor',
+        'battery',
+        'camera',
+        'screen_size',
     ];
 
     protected $casts = [
@@ -28,6 +34,11 @@ class Smartphone extends Model
         'design_score' => 'decimal:1',
         'battery_score' => 'decimal:1',
         'release_year' => 'integer',
+        'ram' => 'integer',
+        'storage' => 'integer',
+        'battery' => 'integer',
+        'camera' => 'integer',
+        'screen_size' => 'decimal:1',
     ];
 
     /**

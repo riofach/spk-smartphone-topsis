@@ -20,10 +20,10 @@ Route::get('/', function () {
 });
 
 // Route untuk melihat daftar smartphone
-Route::get('/smartphones', [SmartphoneController::class, 'index'])->name('smartphones.index');
-Route::get('/smartphones/{smartphone}/edit', [SmartphoneController::class, 'edit'])->name('smartphones.edit');
-Route::put('/smartphones/{smartphone}', [SmartphoneController::class, 'update'])->name('smartphones.update');
-Route::delete('/smartphones/{smartphone}', [SmartphoneController::class, 'destroy'])->name('smartphones.destroy');
+Route::get('/smartphones-icibos', [SmartphoneController::class, 'index'])->name('smartphones.index');
+Route::get('/smartphones-icibos/{smartphone}/edit', [SmartphoneController::class, 'edit'])->name('smartphones.edit');
+Route::put('/smartphones-icibos/{smartphone}', [SmartphoneController::class, 'update'])->name('smartphones.update');
+Route::delete('/smartphones-icibos/{smartphone}', [SmartphoneController::class, 'destroy'])->name('smartphones.destroy');
 
 // Route untuk rekomendasi SPK TOPSIS
 Route::get('/recommendation', [SmartphoneController::class, 'recommendationForm'])->name('recommendation.form');
