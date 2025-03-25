@@ -82,10 +82,10 @@
         }
 
         /* .feature-card:hover .feature-icon {
-                                                                background: #e94560;
-                                                                color: white;
-                                                                transform: rotateY(180deg);
-                                                            } */
+                                                                                background: #e94560;
+                                                                                color: white;
+                                                                                transform: rotateY(180deg);
+                                                                            } */
 
         .btn-custom-primary {
             background-color: #e94560;
@@ -160,6 +160,23 @@
         .disclaimer-content strong {
             color: #60a5fa;
         }
+
+        /* Spline 3D Model Styling */
+        .spline-container {
+            position: relative;
+            z-index: 1;
+            transition: transform 0.5s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .spline-container:hover {
+            transform: translateY(-10px);
+        }
+
+        spline-viewer {
+            border-radius: 0.75rem;
+        }
     </style>
 @endsection
 
@@ -174,8 +191,12 @@
                     </a>
                 </div>
                 <div class="col-lg-6 d-none d-lg-block text-center" data-aos="fade-left" data-aos-delay="200">
-                    <img src="https://images.unsplash.com/photo-1621330396167-b3d451b9b83b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                        alt="Smartphone" class="img-fluid rounded-4 shadow hero-image" style="max-height: 400px;">
+                    <div class="spline-container"
+                        style="height: 400px; width: 100%; border-radius: 0.75rem; overflow: hidden;">
+                        <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.80/build/spline-viewer.js"></script>
+                        <spline-viewer url="https://prod.spline.design/YEezmzcomPUEhx8c/scene.splinecode"
+                            style="height: 100%; width: 100%;"></spline-viewer>
+                    </div>
                 </div>
             </div>
         </div>

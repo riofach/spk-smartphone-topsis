@@ -10,8 +10,35 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-5 text-center mb-4">
-                        <img id="detailImage" src="" alt="Detail Image" class="img-fluid mb-3 rounded shadow"
-                            style="max-width: 300px;">
+                        <div class="mb-3">
+                            <ul class="nav nav-tabs justify-content-center" id="detailViewTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="image-tab" data-bs-toggle="tab"
+                                        data-bs-target="#image-view" type="button" role="tab"
+                                        aria-selected="true">Gambar</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="3d-tab" data-bs-toggle="tab"
+                                        data-bs-target="#3d-view" type="button" role="tab"
+                                        aria-selected="false">Model 3D</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content mt-3" id="detailViewTabContent">
+                                <div class="tab-pane fade show active" id="image-view" role="tabpanel">
+                                    <img id="detailImage" src="" alt="Detail Image"
+                                        class="img-fluid rounded shadow" style="max-width: 300px;">
+                                </div>
+                                <div class="tab-pane fade" id="3d-view" role="tabpanel">
+                                    <div class="spline-viewer-container"
+                                        style="height: 300px; width: 100%; border-radius: 0.75rem; overflow: hidden;">
+                                        <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.80/build/spline-viewer.js"></script>
+                                        <spline-viewer
+                                            url="https://prod.spline.design/YEezmzcomPUEhx8c/scene.splinecode"
+                                            style="height: 100%; width: 100%;"></spline-viewer>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <h4 id="detailName" class="text-gradient mb-3"></h4>
                         {{-- <span id="detailBrand" class="badge bg-primary mb-2 d-block mx-auto"
                             style="max-width: fit-content;"></span> --}}
@@ -139,6 +166,34 @@
 
 <!-- Script untuk modal detail smartphone -->
 @push('scripts')
+    <style>
+        /* Styling untuk tab model 3D */
+        #detailViewTab .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            background-color: rgba(31, 41, 55, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        #detailViewTab .nav-link:hover {
+            color: white;
+            background-color: rgba(109, 40, 217, 0.5);
+        }
+
+        #detailViewTab .nav-link.active {
+            color: white;
+            background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+            border-color: rgba(139, 92, 246, 0.5);
+            font-weight: 500;
+        }
+
+        .spline-viewer-container {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Inisialisasi Radar Chart dan update data
