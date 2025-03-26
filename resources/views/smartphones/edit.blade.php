@@ -53,42 +53,31 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="image" class="form-label">
-                                        <i class="fas fa-image me-2"></i>Gambar Smartphone (PNG, Maks. 1MB)
-                                    </label>
-                                    <div class="image-container mb-2 text-center position-relative overflow-hidden rounded">
-                                        @if ($smartphone->image_url)
-                                            <img src="{{ $smartphone->image_url }}" alt="{{ $smartphone->name }}"
-                                                class="img-fluid" style="max-height: 200px;" id="currentImage">
-                                            <div class="image-overlay">
-                                                <span class="badge bg-primary">Current Image</span>
-                                            </div>
-                                        @else
-                                            <div class="no-image-container p-4 rounded text-center">
-                                                <i class="fas fa-image fa-4x mb-3 text-muted"></i>
-                                                <p class="text-muted">Tidak ada gambar</p>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div class="input-group">
-                                        <input type="file" class="form-control @error('image') is-invalid @enderror"
-                                            id="image" name="image" accept="image/*" onchange="previewImage(this)">
-                                    </div>
-                                    <div class="mt-2 text-center d-none" id="imagePreviewContainer">
-                                        <div class="position-relative overflow-hidden rounded">
-                                            <img id="imagePreview" src="#" alt="Preview" class="img-fluid"
-                                                style="max-height: 200px;">
-                                            <div class="image-overlay">
-                                                <span class="badge bg-success">New Image</span>
-                                            </div>
+                                    <label for="image" class="form-label">Gambar Smartphone</label>
+                                    <input type="file" class="form-control @error('image') is-invalid @enderror"
+                                        id="image" name="image" accept="image/png">
+                                    <div id="imageHelp" class="form-text text-warning">Pilih gambar smartphone (format PNG,
+                                        maks. 2MB).</div>
+                                    @error('image')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                    <div class="mt-2">
+                                        <div class="image-preview-container">
+                                            @if ($smartphone->image_url && !str_contains($smartphone->image_url, 'no-image.png'))
+                                                <img id="imagePreview" src="{{ $smartphone->image_url }}"
+                                                    alt="{{ $smartphone->name }}" class="img-thumbnail"
+                                                    style="max-height: 200px; max-width: 200px;">
+                                                <span class="badge bg-info image-preview-badge">Gambar Saat Ini</span>
+                                            @else
+                                                <img id="imagePreview" src="{{ asset('images/no-image.png') }}"
+                                                    alt="No Image" class="img-thumbnail"
+                                                    style="max-height: 200px; max-width: 200px;">
+                                                <span class="badge bg-secondary image-preview-badge d-none">Preview</span>
+                                            @endif
                                         </div>
                                     </div>
-                                    @error('image')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                    <small class="text-white">Format yang diizinkan: JPG, PNG, GIF dengan ukuran maksimal
-                                        2MB. Biarkan
-                                        kosong jika tidak ingin mengubah gambar.</small>
                                 </div>
 
                                 <div class="mb-3">
@@ -483,36 +472,39 @@
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Preview image when uploaded
-        function previewImage(input) {
-            const container = document.getElementById('imagePreviewContainer');
-            const preview = document.getElementById('imagePreview');
-            const currentImage = document.getElementById('currentImage');
+        // Preview gambar saat dipilih
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validasi format file
+                if (!file.type.match('image/png')) {
+                    alert('Hanya file PNG yang diizinkan');
+                    this.value = ''; // Reset input
+                    return;
+                }
 
-            if (input.files && input.files[0]) {
+                // Validasi ukuran file
+                if (file.size > 2 * 1024 * 1024) { // 2MB
+                    alert('Ukuran file maksimal adalah 2MB');
+                    this.value = ''; // Reset input
+                    return;
+                }
+
                 const reader = new FileReader();
-
                 reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
                     preview.src = e.target.result;
-                    container.classList.remove('d-none');
 
-                    // Add fade effect
-                    if (currentImage) {
-                        currentImage.style.opacity = '0.5';
-                    }
+                    // Tampilkan badge preview
+                    const badge = document.querySelector('.image-preview-badge');
+                    badge.textContent = 'Preview Gambar Baru';
+                    badge.classList.remove('d-none');
+                    badge.classList.remove('bg-info');
+                    badge.classList.add('bg-success');
                 }
-
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                preview.src = "#";
-                container.classList.add('d-none');
-
-                // Reset current image
-                if (currentImage) {
-                    currentImage.style.opacity = '1';
-                }
+                reader.readAsDataURL(file);
             }
-        }
+        });
 
         // Update score when range is changed
         function updateScore(fieldId, value) {

@@ -17,11 +17,11 @@
                                         data-bs-target="#image-view" type="button" role="tab"
                                         aria-selected="true">Gambar</button>
                                 </li>
-                                <li class="nav-item" role="presentation">
+                                {{-- <li class="nav-item" role="presentation">
                                     <button class="nav-link" id="3d-tab" data-bs-toggle="tab"
                                         data-bs-target="#3d-view" type="button" role="tab"
                                         aria-selected="false">Model 3D</button>
-                                </li>
+                                </li> --}}
                             </ul>
                             <div class="tab-content mt-3" id="detailViewTabContent">
                                 <div class="tab-pane fade show active" id="image-view" role="tabpanel">

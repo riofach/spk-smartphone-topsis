@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Criteria;
 use App\Models\Smartphone;
+use App\Services\SmartphoneImageService;
 use App\Services\TopsisService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -15,10 +16,12 @@ use Illuminate\Support\Str;
 class SmartphoneController extends Controller
 {
     protected $topsisService;
+    protected $smartphoneImageService;
 
-    public function __construct(TopsisService $topsisService)
+    public function __construct(TopsisService $topsisService, SmartphoneImageService $smartphoneImageService)
     {
         $this->topsisService = $topsisService;
+        $this->smartphoneImageService = $smartphoneImageService;
 
         // Buat direktori jika belum ada
         $this->createDirectoryIfNotExists();
@@ -220,7 +223,7 @@ class SmartphoneController extends Controller
             'design_score' => 'required|numeric|min:1|max:10',
             'battery_score' => 'required|numeric|min:1|max:10',
             'release_year' => 'required|integer|min:' . (now()->year - 2) . '|max:' . now()->year,
-            'image' => 'required|image|mimes:png|max:1024',
+            'image' => 'required|image|mimes:png|max:2048',
             'ram' => 'required|integer|min:1',
             'storage' => 'required|integer|min:8',
             'processor' => 'required|string',
@@ -229,61 +232,43 @@ class SmartphoneController extends Controller
             'screen_size' => 'required|numeric|min:3|max:10',
         ]);
 
+        // Default image URL
+        $imageUrl = null;
+
         // Handle image upload
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = Str::slug($request->name) . '-' . time() . '.' . $image->getClientOriginalExtension();
-
-            // Store image directly to public/images/smartphones
-            $uploadPath = public_path('images/smartphones');
-
-            // Buat direktori jika belum ada
-            if (!File::exists($uploadPath)) {
-                File::makeDirectory($uploadPath, 0755, true);
-            }
-
-            // Simpan gambar
-            $image->move($uploadPath, $imageName);
-
-            Smartphone::create([
-                'name' => $request->name,
-                'price' => $request->price,
-                'description' => $request->description,
-                'camera_score' => $request->camera_score,
-                'performance_score' => $request->performance_score,
-                'design_score' => $request->design_score,
-                'battery_score' => $request->battery_score,
-                'release_year' => $request->release_year,
-                'image_url' => 'images/smartphones/' . $imageName,
-                'ram' => $request->ram,
-                'storage' => $request->storage,
-                'processor' => $request->processor,
-                'battery' => $request->battery,
-                'camera' => $request->camera,
-                'screen_size' => $request->screen_size,
-            ]);
-        } else {
-            Smartphone::create([
-                'name' => $request->name,
-                'price' => $request->price,
-                'description' => $request->description,
-                'camera_score' => $request->camera_score,
-                'performance_score' => $request->performance_score,
-                'design_score' => $request->design_score,
-                'battery_score' => $request->battery_score,
-                'release_year' => $request->release_year,
-                'image_url' => 'images/no-image.png',
-                'ram' => $request->ram,
-                'storage' => $request->storage,
-                'processor' => $request->processor,
-                'battery' => $request->battery,
-                'camera' => $request->camera,
-                'screen_size' => $request->screen_size,
-            ]);
+            // Upload to Supabase via our service
+            $imageUrl = $this->smartphoneImageService->processAndUpload(
+                $request->file('image'),
+                $request->name
+            );
         }
 
+        // If no image URL (upload failed or no image), use default
+        if (!$imageUrl) {
+            $imageUrl = asset('images/no-image.png');
+        }
+
+        Smartphone::create([
+            'name' => $request->name,
+            'price' => $request->price,
+            'description' => $request->description,
+            'camera_score' => $request->camera_score,
+            'performance_score' => $request->performance_score,
+            'design_score' => $request->design_score,
+            'battery_score' => $request->battery_score,
+            'release_year' => $request->release_year,
+            'image_url' => $imageUrl,
+            'ram' => $request->ram,
+            'storage' => $request->storage,
+            'processor' => $request->processor,
+            'battery' => $request->battery,
+            'camera' => $request->camera,
+            'screen_size' => $request->screen_size,
+        ]);
+
         return redirect()->route('smartphones.index')
-            ->with('success', 'Smartphone berhasil ditambahkan');
+            ->with('success', 'Smartphone berhasil ditambahkan dengan gambar di Supabase');
     }
 
     /**
@@ -300,7 +285,7 @@ class SmartphoneController extends Controller
      */
     public function update(Request $request, Smartphone $smartphone)
     {
-        $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'description' => 'required|string',
@@ -309,62 +294,64 @@ class SmartphoneController extends Controller
             'design_score' => 'required|numeric|min:1|max:10',
             'battery_score' => 'required|numeric|min:1|max:10',
             'release_year' => 'required|integer|min:' . (now()->year - 2) . '|max:' . now()->year,
-            'image' => 'nullable|image|mimes:png|max:1024',
             'ram' => 'required|integer|min:1',
             'storage' => 'required|integer|min:8',
             'processor' => 'required|string',
             'battery' => 'required|integer|min:1000',
             'camera' => 'required|integer|min:5',
             'screen_size' => 'required|numeric|min:3|max:10',
-        ]);
+        ];
+
+        // Jika ada file gambar baru
+        if ($request->hasFile('image')) {
+            $rules['image'] = 'image|mimes:png|max:2048';
+        }
+
+        $validatedData = $request->validate($rules);
 
         // Update data dasar
         $smartphone->update([
-            'name' => $request->name,
-            'price' => $request->price,
-            'description' => $request->description,
-            'camera_score' => $request->camera_score,
-            'performance_score' => $request->performance_score,
-            'design_score' => $request->design_score,
-            'battery_score' => $request->battery_score,
-            'release_year' => $request->release_year,
-            'ram' => $request->ram,
-            'storage' => $request->storage,
-            'processor' => $request->processor,
-            'battery' => $request->battery,
-            'camera' => $request->camera,
-            'screen_size' => $request->screen_size,
+            'name' => $validatedData['name'],
+            'price' => $validatedData['price'],
+            'description' => $validatedData['description'],
+            'camera_score' => $validatedData['camera_score'],
+            'performance_score' => $validatedData['performance_score'],
+            'design_score' => $validatedData['design_score'],
+            'battery_score' => $validatedData['battery_score'],
+            'release_year' => $validatedData['release_year'],
+            'ram' => $validatedData['ram'],
+            'storage' => $validatedData['storage'],
+            'processor' => $validatedData['processor'],
+            'battery' => $validatedData['battery'],
+            'camera' => $validatedData['camera'],
+            'screen_size' => $validatedData['screen_size'],
         ]);
 
         // Handle image upload
         if ($request->hasFile('image')) {
-            // Delete old image if exists and not default image
-            $oldImagePath = null;
-            if (!empty($smartphone->getRawOriginal('image_url')) && $smartphone->getRawOriginal('image_url') != 'images/no-image.png') {
-                $oldImagePath = public_path($smartphone->getRawOriginal('image_url'));
-                if (File::exists($oldImagePath)) {
-                    File::delete($oldImagePath);
+            // Check if there's an existing Supabase image to delete
+            $currentImageUrl = $smartphone->getRawOriginal('image_url');
+            if ($currentImageUrl && filter_var($currentImageUrl, FILTER_VALIDATE_URL)) {
+                // If the current image is hosted on Supabase, delete it
+                if (strpos($currentImageUrl, env('SUPABASE_URL')) !== false) {
+                    $this->smartphoneImageService->deleteImage($currentImageUrl);
+                }
+                // If local image, delete using previous code
+                elseif ($currentImageUrl != asset('images/no-image.png') && file_exists(public_path($currentImageUrl))) {
+                    unlink(public_path($currentImageUrl));
                 }
             }
 
-            $image = $request->file('image');
-            $imageName = Str::slug($request->name) . '-' . time() . '.' . $image->getClientOriginalExtension();
+            // Upload to Supabase via our service
+            $imageUrl = $this->smartphoneImageService->processAndUpload(
+                $request->file('image'),
+                $validatedData['name']
+            );
 
-            // Store image directly to public/images/smartphones
-            $uploadPath = public_path('images/smartphones');
-
-            // Buat direktori jika belum ada
-            if (!File::exists($uploadPath)) {
-                File::makeDirectory($uploadPath, 0755, true);
+            // If upload succeeded, update image URL
+            if ($imageUrl) {
+                $smartphone->update(['image_url' => $imageUrl]);
             }
-
-            // Simpan gambar
-            $image->move($uploadPath, $imageName);
-
-            // Update image_url
-            $smartphone->update([
-                'image_url' => 'images/smartphones/' . $imageName,
-            ]);
         }
 
         return redirect()->route('smartphones.index')
@@ -378,16 +365,17 @@ class SmartphoneController extends Controller
     {
         try {
             // Dapatkan path gambar asli dari database (tanpa accessor)
-            $imagePath = $smartphone->getRawOriginal('image_url');
+            $imageUrl = $smartphone->getRawOriginal('image_url');
 
-            // Hapus gambar dari direktori jika bukan gambar default
-            if (!empty($imagePath) && $imagePath != 'images/no-image.png') {
-                $fullImagePath = public_path($imagePath);
-                if (file_exists($fullImagePath)) {
-                    unlink($fullImagePath);
-                    Log::info('Gambar berhasil dihapus: ' . $fullImagePath);
-                } else {
-                    Log::warning('Gambar tidak ditemukan: ' . $fullImagePath);
+            // Cek apakah gambar di Supabase atau lokal
+            if ($imageUrl && filter_var($imageUrl, FILTER_VALIDATE_URL)) {
+                // Jika gambar di Supabase, hapus menggunakan service
+                if (strpos($imageUrl, env('SUPABASE_URL')) !== false) {
+                    $this->smartphoneImageService->deleteImage($imageUrl);
+                }
+                // Jika gambar lokal, hapus dengan cara biasa
+                elseif ($imageUrl != asset('images/no-image.png') && file_exists(public_path($imageUrl))) {
+                    unlink(public_path($imageUrl));
                 }
             }
 
@@ -456,16 +444,17 @@ class SmartphoneController extends Controller
         foreach ($obsoleteSmartphones as $smartphone) {
             try {
                 // Dapatkan path gambar asli dari database (tanpa accessor)
-                $imagePath = $smartphone->getRawOriginal('image_url');
+                $imageUrl = $smartphone->getRawOriginal('image_url');
 
-                // Hapus gambar dari direktori jika bukan gambar default
-                if (!empty($imagePath) && $imagePath != 'images/no-image.png') {
-                    $fullImagePath = public_path($imagePath);
-                    if (file_exists($fullImagePath)) {
-                        unlink($fullImagePath);
-                        Log::info('Gambar smartphone usang berhasil dihapus: ' . $fullImagePath);
-                    } else {
-                        Log::warning('Gambar smartphone usang tidak ditemukan: ' . $fullImagePath);
+                // Cek apakah gambar di Supabase atau lokal
+                if ($imageUrl && filter_var($imageUrl, FILTER_VALIDATE_URL)) {
+                    // Jika gambar di Supabase, hapus menggunakan service
+                    if (strpos($imageUrl, env('SUPABASE_URL')) !== false) {
+                        $this->smartphoneImageService->deleteImage($imageUrl);
+                    }
+                    // Jika gambar lokal, hapus dengan cara biasa
+                    elseif ($imageUrl != asset('images/no-image.png') && file_exists(public_path($imageUrl))) {
+                        unlink(public_path($imageUrl));
                     }
                 }
 

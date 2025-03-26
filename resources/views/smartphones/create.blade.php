@@ -52,23 +52,24 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="image" class="form-label">
-                                        <i class="fas fa-image me-2"></i>Gambar (PNG, Maks. 1MB)
-                                    </label>
-                                    <div class="input-group">
-                                        <input type="file" class="form-control @error('image') is-invalid @enderror"
-                                            id="image" name="image" accept="image/*" onchange="previewImage(this)">
-                                    </div>
-                                    <div class="mt-2 text-center d-none" id="imagePreviewContainer">
-                                        <img id="imagePreview" src="#" alt="Preview" class="img-fluid rounded"
-                                            style="max-height: 150px;">
-                                    </div>
+                                    <label for="image" class="form-label">Gambar Smartphone <span
+                                            class="text-danger">*</span></label>
+                                    <input type="file" class="form-control @error('image') is-invalid @enderror"
+                                        id="image" name="image" accept="image/png" required>
+                                    <div id="imageHelp" class="form-text text-warning">Pilih gambar smartphone (format PNG,
+                                        maks. 2MB).</div>
                                     @error('image')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
                                     @enderror
-                                    <small class="text-white">Format yang diizinkan: semua format gambar dengan ukuran
-                                        maksimal
-                                        1MB</small>
+                                    <div class="mt-2">
+                                        <div class="image-preview-container">
+                                            <img id="imagePreview" src="{{ asset('images/no-image.png') }}" alt="Preview"
+                                                class="img-thumbnail" style="max-height: 200px; max-width: 200px;">
+                                            <span class="badge bg-secondary image-preview-badge d-none">Preview</span>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="form-group mb-4">
@@ -345,25 +346,39 @@
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Preview image when uploaded
-        function previewImage(input) {
-            const container = document.getElementById('imagePreviewContainer');
-            const preview = document.getElementById('imagePreview');
-
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    container.classList.remove('d-none');
+        // Preview gambar saat dipilih
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validasi format file
+                if (!file.type.match('image/png')) {
+                    alert('Hanya file PNG yang diizinkan');
+                    this.value = ''; // Reset input
+                    return;
                 }
 
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                preview.src = "#";
-                container.classList.add('d-none');
+                // Validasi ukuran file
+                if (file.size > 2 * 1024 * 1024) { // 2MB
+                    alert('Ukuran file maksimal adalah 2MB');
+                    this.value = ''; // Reset input
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+
+                    // Tampilkan badge preview
+                    const badge = document.querySelector('.image-preview-badge');
+                    badge.textContent = 'Preview';
+                    badge.classList.remove('d-none');
+                    badge.classList.remove('bg-info');
+                    badge.classList.add('bg-secondary');
+                }
+                reader.readAsDataURL(file);
             }
-        }
+        });
 
         // Update score when range is changed
         function updateScore(fieldId, value) {

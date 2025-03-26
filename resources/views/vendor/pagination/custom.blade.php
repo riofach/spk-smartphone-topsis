@@ -13,11 +13,13 @@
         @endif
 
         <div class="pagination-numbers d-flex align-items-center gap-2">
-            {{-- First Page Link
-            <a href="{{ $paginator->url(1) }}"
-                class="pagination-number {{ $paginator->currentPage() === 1 ? 'active' : '' }}">
-                1
-            </a> --}}
+            {{-- First Page Link (Only show when not on page 1 or 2) --}}
+            @if ($paginator->currentPage() > 2)
+                <a href="{{ $paginator->url(1) }}" class="pagination-number">1</a>
+                @if ($paginator->currentPage() > 3)
+                    <span class="pagination-ellipsis">...</span>
+                @endif
+            @endif
 
             {{-- Pagination Elements --}}
             @foreach ($elements as $element)

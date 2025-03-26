@@ -25,6 +25,12 @@ Sistem Pendukung Keputusan (SPK) untuk membantu memilih smartphone berdasarkan b
 -   Manajemen data smartphone (tambah, edit, hapus)
 -   Upload gambar smartphone
 -   Peringkat rekomendasi dengan tampilan visual
+-   Manajemen data smartphone (CRUD)
+-   Rekomendasi smartphone menggunakan metode TOPSIS berdasarkan preferensi pengguna
+-   Penyimpanan gambar fleksibel (lokal atau Supabase)
+-   Tampilan top 3 rekomendasi dengan ribbon khusus
+-   Pembersihan otomatis smartphone yang sudah lebih dari 2 tahun
+-   Pagination untuk tampilan daftar smartphone
 
 ## Teknologi
 
@@ -198,6 +204,18 @@ TOPSIS (Technique for Order Preference by Similarity to Ideal Solution) adalah m
 -   `resources/views/smartphones/recommendation.blade.php`: Form rekomendasi
 -   `resources/views/smartphones/recommendation-results.blade.php`: Hasil rekomendasi
 -   `public/images/smartphones/`: Penyimpanan gambar smartphone
+
+## Penyimpanan Gambar
+
+Aplikasi mendukung dua model penyimpanan gambar:
+
+1. **Penyimpanan Lokal** - Default, menyimpan gambar di direktori public/images
+2. **Supabase Storage** - Penyimpanan cloud yang menskalakan dengan lebih baik
+
+Untuk konfigurasi dan migrasi ke Supabase, lihat:
+
+-   [Panduan Supabase](README-SUPABASE.md) - Petunjuk integrasi dengan Supabase
+-   [Panduan Migrasi](README-MIGRATION.md) - Cara memigrasikan gambar dari lokal ke Supabase
 
 ---
 
