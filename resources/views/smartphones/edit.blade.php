@@ -82,7 +82,6 @@
                                         value="{{ old('model_3d_url', $smartphone->model_3d_url) }}">
                                     <div class="form-text text-warning">
                                         Masukkan URL embed Binkies3D untuk model 3D smartphone ini.
-                                        Contoh: https://embed.studio.binkies3d.com/live3d/67e4f41789f18c005467d62a
                                     </div>
                                     @error('model_3d_url')
                                         <div class="invalid-feedback">{{ $message }}</div>

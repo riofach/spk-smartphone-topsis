@@ -31,8 +31,15 @@
                                 <div class="tab-pane fade" id="3d-view" role="tabpanel">
                                     <div class="binkies3d-container position-relative"
                                         style="height: 300px; width: 100%; border-radius: 0.75rem; overflow: hidden; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);">
-                                        <iframe width="100%" height="100%" id="smartphone3dModel"
-                                            src="https://embed.studio.binkies3d.com/live3d/67e4f41789f18c005467d62a"
+                                        <div id="no3dModelMessage"
+                                            class="d-none position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-75">
+                                            <i class="fas fa-cube fa-4x mb-3 text-secondary"></i>
+                                            <h5 class="text-light">Model 3D Tidak Tersedia</h5>
+                                            <p class="text-light text-center px-4">Smartphone ini tidak memiliki model
+                                                3D yang tersedia untuk ditampilkan.</p>
+                                            <span class="badge bg-secondary">Tidak Tersedia</span>
+                                        </div>
+                                        <iframe width="100%" height="100%" id="smartphone3dModel" src=""
                                             frameborder="0" allowfullscreen></iframe>
                                         <button type="button" id="expand3dModelBtn"
                                             class="btn btn-sm btn-dark position-absolute"
@@ -223,6 +230,7 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
             background-color: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
         }
 
         .binkies3d-container iframe {
@@ -246,6 +254,17 @@
         #fullscreen3dModal .modal-content {
             border: none;
             border-radius: 0;
+        }
+
+        /* Tambahan styling untuk 3D model badge */
+        .model3d-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 5;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -280,14 +299,48 @@
             document.getElementById('detailProcessor').textContent = smartphone.processor || 'N/A';
 
             // Set 3D model jika tersedia
+            const no3dModelMessage = document.getElementById('no3dModelMessage');
+            const expand3dModelBtn = document.getElementById('expand3dModelBtn');
+            const smartphone3dModel = document.getElementById('smartphone3dModel');
+
             if (smartphone.model_3d_url) {
-                document.getElementById('smartphone3dModel').src = smartphone.model_3d_url;
+                // Model 3D tersedia
+                smartphone3dModel.src = smartphone.model_3d_url;
                 current3dModelUrl = smartphone.model_3d_url;
+                no3dModelMessage.classList.add('d-none');
+                smartphone3dModel.classList.remove('d-none');
+                expand3dModelBtn.classList.remove('d-none');
+
+                // Tampilkan badge tersedia
+                if (!document.querySelector('.model3d-badge.bg-success')) {
+                    const availableBadge = document.createElement('div');
+                    availableBadge.className = 'model3d-badge bg-success';
+                    availableBadge.innerHTML = '<i class="fas fa-check-circle me-1"></i> Model 3D Tersedia';
+                    document.querySelector('.binkies3d-container').appendChild(availableBadge);
+
+                    // Hapus badge tidak tersedia jika ada
+                    const unavailableBadge = document.querySelector('.model3d-badge.bg-secondary');
+                    if (unavailableBadge) unavailableBadge.remove();
+                }
             } else {
-                // Gunakan model default jika tidak ada
-                const defaultModelUrl = 'https://embed.studio.binkies3d.com/live3d/67e4f41789f18c005467d62a';
-                document.getElementById('smartphone3dModel').src = defaultModelUrl;
-                current3dModelUrl = defaultModelUrl;
+                // Model 3D tidak tersedia
+                smartphone3dModel.src = '';
+                current3dModelUrl = '';
+                no3dModelMessage.classList.remove('d-none');
+                smartphone3dModel.classList.add('d-none');
+                expand3dModelBtn.classList.add('d-none');
+
+                // Tampilkan badge tidak tersedia
+                if (!document.querySelector('.model3d-badge.bg-secondary')) {
+                    const unavailableBadge = document.createElement('div');
+                    unavailableBadge.className = 'model3d-badge bg-secondary';
+                    unavailableBadge.innerHTML = '<i class="fas fa-times-circle me-1"></i> Model 3D Tidak Tersedia';
+                    document.querySelector('.binkies3d-container').appendChild(unavailableBadge);
+
+                    // Hapus badge tersedia jika ada
+                    const availableBadge = document.querySelector('.model3d-badge.bg-success');
+                    if (availableBadge) availableBadge.remove();
+                }
             }
 
             // Update modal title dengan nama smartphone
@@ -345,8 +398,10 @@
 
             // Setup expand button untuk model 3D
             document.getElementById('expand3dModelBtn').addEventListener('click', function() {
-                document.getElementById('fullscreen3dModelFrame').src = current3dModelUrl;
-                fullscreenModal.show();
+                if (current3dModelUrl) {
+                    document.getElementById('fullscreen3dModelFrame').src = current3dModelUrl;
+                    fullscreenModal.show();
+                }
             });
 
             // Reset iframe src saat modal ditutup untuk menghindari lag dan pastikan modal ditutup dengan benar
