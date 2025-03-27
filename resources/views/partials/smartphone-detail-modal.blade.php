@@ -17,11 +17,11 @@
                                         data-bs-target="#image-view" type="button" role="tab"
                                         aria-selected="true">Gambar</button>
                                 </li>
-                                {{-- <li class="nav-item" role="presentation">
+                                <li class="nav-item" role="presentation">
                                     <button class="nav-link" id="3d-tab" data-bs-toggle="tab"
                                         data-bs-target="#3d-view" type="button" role="tab"
                                         aria-selected="false">Model 3D</button>
-                                </li> --}}
+                                </li>
                             </ul>
                             <div class="tab-content mt-3" id="detailViewTabContent">
                                 <div class="tab-pane fade show active" id="image-view" role="tabpanel">
@@ -29,12 +29,16 @@
                                         class="img-fluid rounded shadow" style="max-width: 300px;">
                                 </div>
                                 <div class="tab-pane fade" id="3d-view" role="tabpanel">
-                                    <div class="spline-viewer-container"
-                                        style="height: 300px; width: 100%; border-radius: 0.75rem; overflow: hidden;">
-                                        <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.80/build/spline-viewer.js"></script>
-                                        <spline-viewer
-                                            url="https://prod.spline.design/YEezmzcomPUEhx8c/scene.splinecode"
-                                            style="height: 100%; width: 100%;"></spline-viewer>
+                                    <div class="binkies3d-container position-relative"
+                                        style="height: 300px; width: 100%; border-radius: 0.75rem; overflow: hidden; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <iframe width="100%" height="100%" id="smartphone3dModel"
+                                            src="https://embed.studio.binkies3d.com/live3d/67e4f41789f18c005467d62a"
+                                            frameborder="0" allowfullscreen></iframe>
+                                        <button type="button" id="expand3dModelBtn"
+                                            class="btn btn-sm btn-dark position-absolute"
+                                            style="top: 10px; right: 10px; opacity: 0.8; z-index: 10;">
+                                            <i class="fas fa-expand"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -164,6 +168,32 @@
     </div>
 </div>
 
+<!-- Modal Fullscreen untuk Model 3D -->
+<div class="modal fade" id="fullscreen3dModal" tabindex="-1" aria-labelledby="fullscreen3dModalLabel"
+    aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content" style="background-color: rgba(0, 0, 0, 0.9);">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-light" id="fullscreen3dModalLabel">Model 3D Smartphone</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex align-items-center justify-content-center p-0">
+                <div class="position-relative" style="width: 100%; height: 90vh;">
+                    <iframe width="100%" height="100%" id="fullscreen3dModelFrame" src=""
+                        frameborder="0" allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+            <div class="modal-footer bg-dark border-0">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                    <i class="fas fa-compress me-2"></i>Tutup Fullscreen
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Script untuk modal detail smartphone -->
 @push('scripts')
     <style>
@@ -188,16 +218,41 @@
             font-weight: 500;
         }
 
-        .spline-viewer-container {
+        .spline-viewer-container,
+        .binkies3d-container {
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
             background-color: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .binkies3d-container iframe {
+            border: none;
+            display: block;
+        }
+
+        #expand3dModelBtn {
+            transition: all 0.2s ease;
+        }
+
+        #expand3dModelBtn:hover {
+            background: linear-gradient(135deg, #6d28d9, #8b5cf6) !important;
+            opacity: 1 !important;
+        }
+
+        .modal-fullscreen {
+            padding: 0;
+        }
+
+        #fullscreen3dModal .modal-content {
+            border: none;
+            border-radius: 0;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Inisialisasi Radar Chart dan update data
         let radarChart;
+        let current3dModelUrl = '';
 
         // Expose function untuk digunakan dari luar
         window.updateSmartphoneDetail = function(smartphone) {
@@ -222,6 +277,20 @@
             document.getElementById('detailScreen').textContent = smartphone.screen_size ?
                 `${smartphone.screen_size} inch` : 'N/A';
             document.getElementById('detailProcessor').textContent = smartphone.processor || 'N/A';
+
+            // Set 3D model jika tersedia
+            if (smartphone.model_3d_url) {
+                document.getElementById('smartphone3dModel').src = smartphone.model_3d_url;
+                current3dModelUrl = smartphone.model_3d_url;
+            } else {
+                // Gunakan model default jika tidak ada
+                const defaultModelUrl = 'https://embed.studio.binkies3d.com/live3d/67e4f41789f18c005467d62a';
+                document.getElementById('smartphone3dModel').src = defaultModelUrl;
+                current3dModelUrl = defaultModelUrl;
+            }
+
+            // Update modal title dengan nama smartphone
+            document.getElementById('fullscreen3dModalLabel').textContent = `Model 3D - ${smartphone.name}`;
 
             // Pastikan nilai skor ada
             const cameraScore = parseFloat(smartphone.camera_score || 0);
@@ -263,6 +332,18 @@
 
                     window.updateSmartphoneDetail(smartphone);
                 });
+            });
+
+            // Setup expand button untuk model 3D
+            document.getElementById('expand3dModelBtn').addEventListener('click', function() {
+                const fullscreenModal = new bootstrap.Modal(document.getElementById('fullscreen3dModal'));
+                document.getElementById('fullscreen3dModelFrame').src = current3dModelUrl;
+                fullscreenModal.show();
+            });
+
+            // Reset iframe src saat modal ditutup untuk menghindari lag
+            document.getElementById('fullscreen3dModal').addEventListener('hidden.bs.modal', function() {
+                document.getElementById('fullscreen3dModelFrame').src = '';
             });
         }
 

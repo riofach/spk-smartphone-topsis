@@ -72,6 +72,21 @@
                                     </div>
                                 </div>
 
+                                <div class="mb-3">
+                                    <label for="model_3d_url" class="form-label">
+                                        <i class="fas fa-cube me-2"></i>URL Model 3D Binkies
+                                    </label>
+                                    <input type="url" class="form-control @error('model_3d_url') is-invalid @enderror"
+                                        id="model_3d_url" name="model_3d_url" value="{{ old('model_3d_url') }}">
+                                    <div class="form-text text-warning">
+                                        Masukkan URL embed Binkies3D untuk model 3D smartphone ini.
+                                        Contoh: https://embed.studio.binkies3d.com/live3d/67e4f41789f18c005467d62a
+                                    </div>
+                                    @error('model_3d_url')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
                                 <div class="form-group mb-4">
                                     <label for="description" class="form-label">Deskripsi</label>
                                     <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"

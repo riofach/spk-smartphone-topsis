@@ -57,7 +57,7 @@
                                     <input type="file" class="form-control @error('image') is-invalid @enderror"
                                         id="image" name="image" accept="image/png">
                                     <div id="imageHelp" class="form-text text-warning">Pilih gambar smartphone (format PNG,
-                                        maks. 2MB).</div>
+                                        maks. 2MB) atau biarkan kosong untuk tetap menggunakan gambar saat ini.</div>
                                     @error('image')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -65,19 +65,28 @@
                                     @enderror
                                     <div class="mt-2">
                                         <div class="image-preview-container">
-                                            @if ($smartphone->image_url && !str_contains($smartphone->image_url, 'no-image.png'))
-                                                <img id="imagePreview" src="{{ $smartphone->image_url }}"
-                                                    alt="{{ $smartphone->name }}" class="img-thumbnail"
-                                                    style="max-height: 200px; max-width: 200px;">
-                                                <span class="badge bg-info image-preview-badge">Gambar Saat Ini</span>
-                                            @else
-                                                <img id="imagePreview" src="{{ asset('images/no-image.png') }}"
-                                                    alt="No Image" class="img-thumbnail"
-                                                    style="max-height: 200px; max-width: 200px;">
-                                                <span class="badge bg-secondary image-preview-badge d-none">Preview</span>
-                                            @endif
+                                            <img id="imagePreview" src="{{ asset($smartphone->image_url) }}"
+                                                alt="{{ $smartphone->name }}" class="img-thumbnail"
+                                                style="max-height: 200px; max-width: 200px;">
+                                            <span class="badge bg-secondary image-preview-badge d-none">Preview</span>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="model_3d_url" class="form-label">
+                                        <i class="fas fa-cube me-2"></i>URL Model 3D Binkies
+                                    </label>
+                                    <input type="url" class="form-control @error('model_3d_url') is-invalid @enderror"
+                                        id="model_3d_url" name="model_3d_url"
+                                        value="{{ old('model_3d_url', $smartphone->model_3d_url) }}">
+                                    <div class="form-text text-warning">
+                                        Masukkan URL embed Binkies3D untuk model 3D smartphone ini.
+                                        Contoh: https://embed.studio.binkies3d.com/live3d/67e4f41789f18c005467d62a
+                                    </div>
+                                    @error('model_3d_url')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
                                 <div class="mb-3">

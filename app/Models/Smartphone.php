@@ -13,6 +13,7 @@ class Smartphone extends Model
         'name',
         'price',
         'image_url',
+        'model_3d_url',
         'description',
         'camera_score',
         'performance_score',
@@ -68,6 +69,21 @@ class Smartphone extends Model
         }
 
         return asset($this->attributes['image_url']);
+    }
+
+    /**
+     * Get the 3D model URL attribute with default fallback
+     *
+     * @return string
+     */
+    public function getModel3dUrlAttribute()
+    {
+        if (empty($this->attributes['model_3d_url'])) {
+            // Default 3D model URL jika tidak ada
+            return 'https://embed.studio.binkies3d.com/live3d/67e4f41789f18c005467d62a';
+        }
+
+        return $this->attributes['model_3d_url'];
     }
 
     // Scope for filtering only smartphones released within the last 2 years
