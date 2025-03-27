@@ -253,6 +253,7 @@
         // Inisialisasi Radar Chart dan update data
         let radarChart;
         let current3dModelUrl = '';
+        let fullscreenModal = null;
 
         // Expose function untuk digunakan dari luar
         window.updateSmartphoneDetail = function(smartphone) {
@@ -334,16 +335,51 @@
                 });
             });
 
+            // Inisialisasi fullscreen modal hanya sekali
+            if (!fullscreenModal) {
+                fullscreenModal = new bootstrap.Modal(document.getElementById('fullscreen3dModal'), {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+            }
+
             // Setup expand button untuk model 3D
             document.getElementById('expand3dModelBtn').addEventListener('click', function() {
-                const fullscreenModal = new bootstrap.Modal(document.getElementById('fullscreen3dModal'));
                 document.getElementById('fullscreen3dModelFrame').src = current3dModelUrl;
                 fullscreenModal.show();
             });
 
-            // Reset iframe src saat modal ditutup untuk menghindari lag
-            document.getElementById('fullscreen3dModal').addEventListener('hidden.bs.modal', function() {
+            // Reset iframe src saat modal ditutup untuk menghindari lag dan pastikan modal ditutup dengan benar
+            const fullscreenModalElement = document.getElementById('fullscreen3dModal');
+            fullscreenModalElement.addEventListener('hidden.bs.modal', function() {
                 document.getElementById('fullscreen3dModelFrame').src = '';
+
+                // Pastikan backdrop dihapus dengan benar
+                setTimeout(() => {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    if (backdrops.length > 1) {
+                        // Hapus backdrop berlebih
+                        for (let i = 1; i < backdrops.length; i++) {
+                            backdrops[i].remove();
+                        }
+                    }
+
+                    // Pastikan body tidak memiliki class modal-open jika tidak ada modal lain yang terbuka
+                    const openModals = document.querySelectorAll('.modal.show');
+                    if (openModals.length === 0 && document.body.classList.contains('modal-open')) {
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    }
+                }, 100);
+            });
+
+            // Tambahkan event listener untuk tombol close di modal fullscreen
+            const closeButtons = fullscreenModalElement.querySelectorAll('[data-bs-dismiss="modal"]');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    fullscreenModal.hide();
+                });
             });
         }
 
