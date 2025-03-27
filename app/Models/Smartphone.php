@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Smartphone extends Model
 {
@@ -43,6 +44,74 @@ class Smartphone extends Model
     ];
 
     /**
+     * Boot method untuk model
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Clear cache when model is saved or deleted
+        static::saved(function () {
+            self::clearModelCache();
+        });
+
+        static::deleted(function () {
+            self::clearModelCache();
+        });
+    }
+
+    /**
+     * Clear all caches related to smartphones
+     */
+    public static function clearModelCache()
+    {
+        Cache::forget('smartphones.all');
+        Cache::forget('smartphones.recent');
+        Cache::forget('smartphones.filters');
+        Cache::forget('smartphones.yearly');
+        Cache::forget('smartphones.ram_options');
+        Cache::forget('smartphones.storage_options');
+        Cache::forget('smartphones.release_year_options');
+    }
+
+    /**
+     * Get all smartphones with caching
+     */
+    public static function getCachedAll()
+    {
+        return Cache::remember('smartphones.all', 3600, function () {
+            return self::all();
+        });
+    }
+
+    /**
+     * Get recent smartphones with caching
+     */
+    public static function getCachedRecent($limit = 10)
+    {
+        return Cache::remember('smartphones.recent', 3600, function () use ($limit) {
+            return self::withinTwoYears()
+                ->latest()
+                ->take($limit)
+                ->get();
+        });
+    }
+
+    /**
+     * Get filter options with caching
+     */
+    public static function getCachedFilterOptions()
+    {
+        return Cache::remember('smartphones.filters', 3600, function () {
+            return [
+                'ram_options' => self::select('ram')->distinct()->orderBy('ram')->pluck('ram'),
+                'storage_options' => self::select('storage')->distinct()->orderBy('storage')->pluck('storage'),
+                'release_year_options' => self::select('release_year')->distinct()->orderBy('release_year', 'desc')->pluck('release_year'),
+            ];
+        });
+    }
+
+    /**
      * Get the criteria scores for this smartphone as array.
      *
      * @return array
@@ -74,13 +143,12 @@ class Smartphone extends Model
     /**
      * Get the 3D model URL attribute with default fallback
      *
-     * @return string
+     * @return string|null
      */
     public function getModel3dUrlAttribute()
     {
         if (empty($this->attributes['model_3d_url'])) {
-            // Default 3D model URL jika tidak ada
-            return 'https://embed.studio.binkies3d.com/live3d/67e4f41789f18c005467d62a';
+            return null;
         }
 
         return $this->attributes['model_3d_url'];

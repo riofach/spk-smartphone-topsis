@@ -198,7 +198,7 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-2 justify-content-center">
-                                            <a href="{{ route('smartphones.edit', $smartphone) }}"
+                                            <a href="{{ route('smartphones.edit', ['smartphone' => $smartphone, 'page' => $smartphones->currentPage()]) }}"
                                                 class="btn btn-sm btn-warning" data-bs-toggle="tooltip"
                                                 title="Edit Smartphone">
                                                 <i class="fas fa-edit"></i>

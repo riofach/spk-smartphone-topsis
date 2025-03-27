@@ -3,6 +3,9 @@
 use App\Http\Controllers\SmartphoneController;
 use App\Http\Controllers\ListHpController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Response;
+use App\Models\Smartphone;
+use Illuminate\Support\Facades\Cache;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
 
 // Route untuk melihat daftar smartphone
 Route::get('/smartphones-icibos', [SmartphoneController::class, 'index'])->name('smartphones.index');
@@ -34,3 +37,52 @@ Route::get('/admin-add-smartphone', [SmartphoneController::class, 'create'])->na
 Route::post('/admin-add-smartphone', [SmartphoneController::class, 'store'])->name('smartphones.store');
 
 Route::get('/list-hp', [ListHpController::class, 'index'])->name('list-hp.index');
+
+// Sitemap.xml route untuk SEO
+Route::get('/sitemap.xml', function () {
+    // Cache sitemap untuk performa
+    $content = Cache::remember('sitemap.xml', 86400, function () {
+        $sitemap = '<?xml version="1.0" encoding="UTF-8"?>';
+$sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+
+    // Add homepage
+    $sitemap .= '<url>';
+        $sitemap .= '<loc>' . url('/') . '</loc>';
+        $sitemap .= '<changefreq>weekly</changefreq>';
+        $sitemap .= '<priority>1.0</priority>';
+        $sitemap .= '</url>';
+
+    // Add list-hp page
+    $sitemap .= '<url>';
+        $sitemap .= '<loc>' . route('list-hp.index') . '</loc>';
+        $sitemap .= '<changefreq>daily</changefreq>';
+        $sitemap .= '<priority>0.9</priority>';
+        $sitemap .= '</url>';
+
+    // Add recommendation page
+    $sitemap .= '<url>';
+        $sitemap .= '<loc>' . route('recommendation.form') . '</loc>';
+        $sitemap .= '<changefreq>weekly</changefreq>';
+        $sitemap .= '<priority>0.8</priority>';
+        $sitemap .= '</url>';
+
+    // Add smartphones
+    $smartphones = Smartphone::withinTwoYears()->get();
+
+    foreach ($smartphones as $smartphone) {
+    $sitemap .= '<url>';
+        $sitemap .= '<loc>' . route('list-hp.index') . '?id=' . $smartphone->id . '</loc>';
+        $sitemap .= '<lastmod>' . $smartphone->updated_at->toAtomString() . '</lastmod>';
+        $sitemap .= '<changefreq>monthly</changefreq>';
+        $sitemap .= '<priority>0.7</priority>';
+        $sitemap .= '</url>';
+    }
+
+    $sitemap .= '</urlset>';
+
+return $sitemap;
+});
+
+return (new Response($content, 200))
+->header('Content-Type', 'application/xml');
+});

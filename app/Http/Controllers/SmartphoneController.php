@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 class SmartphoneController extends Controller
 {
@@ -58,16 +59,19 @@ class SmartphoneController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Smartphone::withinTwoYears();
-
         // Pencarian real-time untuk AJAX
         if ($request->has('query')) {
-            $searchTerm = $request->input('query');
-            $query->where(function ($q) use ($searchTerm) {
-                $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($searchTerm) . '%']);
-            });
+            return $this->handleAjaxQuery($request);
+        }
 
-            // Terapkan filter lainnya untuk query AJAX juga
+        // Key cache untuk data (bukan view)
+        $cacheKey = 'smartphones.data.' . md5(json_encode($request->all()));
+
+        // Pengambilan data dengan cache
+        $data = Cache::remember($cacheKey, 3600, function () use ($request) {
+            $query = Smartphone::withinTwoYears();
+
+            // Filter berdasarkan range harga
             if ($request->has('min_price') && $request->min_price) {
                 $query->where('price', '>=', $request->min_price);
             }
@@ -76,19 +80,22 @@ class SmartphoneController extends Controller
                 $query->where('price', '<=', $request->max_price);
             }
 
+            // Filter berdasarkan RAM
             if ($request->has('ram') && $request->ram) {
                 $query->where('ram', '=', $request->ram);
             }
 
+            // Filter berdasarkan Storage
             if ($request->has('storage') && $request->storage) {
                 $query->where('storage', '=', $request->storage);
             }
 
+            // Filter berdasarkan tahun rilis
             if ($request->has('release_year') && $request->release_year) {
                 $query->where('release_year', '=', $request->release_year);
             }
 
-            // Terapkan sort untuk query AJAX
+            // Sort by price ASC/DESC atau latest
             if ($request->has('sort')) {
                 switch ($request->sort) {
                     case 'price_low_high':
@@ -106,31 +113,44 @@ class SmartphoneController extends Controller
                 $query->latest();
             }
 
-            // Batasi hasil untuk pencarian real-time
-            $smartphones = $query->limit(20)->get();
+            // Gunakan cached filter options 
+            $filterOptions = Smartphone::getCachedFilterOptions();
 
-            // Tambahkan URL ke data
-            $smartphones->transform(function ($smartphone) {
-                $smartphone->edit_url = route('smartphones.edit', $smartphone->id);
-                $smartphone->delete_url = route('smartphones.destroy', $smartphone->id);
-                return $smartphone;
-            });
+            return [
+                'smartphones' => $query->paginate(10)->withQueryString(),
+                'filterOptions' => $filterOptions,
+                'criteria' => Criteria::all()
+            ];
+        });
 
-            // Pastikan response JSON dengan header yang benar
-            try {
-                return response()->json([
-                    'smartphones' => $smartphones
-                ], 200, ['Content-Type' => 'application/json']);
-            } catch (\Exception $e) {
-                Log::error('Error pada pencarian real-time: ' . $e->getMessage());
-                return response()->json([
-                    'error' => 'Terjadi kesalahan pada server',
-                    'message' => $e->getMessage()
-                ], 500);
-            }
+        // For autocomplete suggestions
+        if ($request->has('suggest') && $request->suggest) {
+            return $this->handleSuggestions($request);
         }
 
-        // Filter berdasarkan range harga
+        // Render view dengan data dari cache
+        return view('smartphones.index', [
+            'smartphones' => $data['smartphones'],
+            'criteria' => $data['criteria'],
+            'ramOptions' => $data['filterOptions']['ram_options'],
+            'storageOptions' => $data['filterOptions']['storage_options'],
+            'releaseYearOptions' => $data['filterOptions']['release_year_options']
+        ]);
+    }
+
+    /**
+     * Handle AJAX query for real-time search
+     */
+    private function handleAjaxQuery(Request $request)
+    {
+        $searchTerm = $request->input('query');
+        $query = Smartphone::withinTwoYears();
+
+        $query->where(function ($q) use ($searchTerm) {
+            $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($searchTerm) . '%']);
+        });
+
+        // Terapkan filter lainnya untuk query AJAX juga
         if ($request->has('min_price') && $request->min_price) {
             $query->where('price', '>=', $request->min_price);
         }
@@ -139,22 +159,19 @@ class SmartphoneController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-        // Filter berdasarkan RAM
         if ($request->has('ram') && $request->ram) {
             $query->where('ram', '=', $request->ram);
         }
 
-        // Filter berdasarkan Storage
         if ($request->has('storage') && $request->storage) {
             $query->where('storage', '=', $request->storage);
         }
 
-        // Filter berdasarkan tahun rilis
         if ($request->has('release_year') && $request->release_year) {
             $query->where('release_year', '=', $request->release_year);
         }
 
-        // Sort by price ASC/DESC atau latest
+        // Terapkan sort untuk query AJAX
         if ($request->has('sort')) {
             switch ($request->sort) {
                 case 'price_low_high':
@@ -172,32 +189,48 @@ class SmartphoneController extends Controller
             $query->latest();
         }
 
-        $smartphones = $query->paginate(10)->withQueryString();
-        $criteria = Criteria::all();
+        // Cache the results
+        $cacheKey = 'smartphones.ajax.' . md5($searchTerm . json_encode($request->all()));
+        $smartphones = Cache::remember($cacheKey, 60, function () use ($query) {
+            return $query->limit(20)->get();
+        });
 
-        // Get unique values for filters
-        $ramOptions = Smartphone::select('ram')->distinct()->orderBy('ram')->pluck('ram');
-        $storageOptions = Smartphone::select('storage')->distinct()->orderBy('storage')->pluck('storage');
-        $releaseYearOptions = Smartphone::select('release_year')->distinct()->orderBy('release_year', 'desc')->pluck('release_year');
+        // Tambahkan URL ke data
+        $smartphones->transform(function ($smartphone) {
+            $smartphone->edit_url = route('smartphones.edit', $smartphone->id);
+            $smartphone->delete_url = route('smartphones.destroy', $smartphone->id);
+            return $smartphone;
+        });
 
-        // For autocomplete suggestions
-        $suggestions = null;
-        if ($request->has('suggest') && $request->suggest) {
-            $suggestions = Smartphone::where('name', 'like', '%' . $request->suggest . '%')
+        // Pastikan response JSON dengan header yang benar
+        try {
+            return response()->json([
+                'smartphones' => $smartphones
+            ], 200, ['Content-Type' => 'application/json']);
+        } catch (\Exception $e) {
+            Log::error('Error pada pencarian real-time: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Terjadi kesalahan pada server',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Handle autocomplete suggestions
+     */
+    private function handleSuggestions(Request $request)
+    {
+        $suggestCacheKey = 'smartphones.suggest.' . $request->suggest;
+
+        $suggestions = Cache::remember($suggestCacheKey, 60, function () use ($request) {
+            return Smartphone::where('name', 'like', '%' . $request->suggest . '%')
                 ->orWhere('processor', 'like', '%' . $request->suggest . '%')
                 ->limit(5)
                 ->get(['id', 'name', 'processor', 'image_url']);
+        });
 
-            return response()->json($suggestions);
-        }
-
-        return view('smartphones.index', compact(
-            'smartphones',
-            'criteria',
-            'ramOptions',
-            'storageOptions',
-            'releaseYearOptions'
-        ));
+        return response()->json($suggestions);
     }
 
     /**
@@ -278,9 +311,10 @@ class SmartphoneController extends Controller
     /**
      * Menampilkan form edit smartphone
      */
-    public function edit(Smartphone $smartphone)
+    public function edit(Request $request, Smartphone $smartphone)
     {
         $currentYear = now()->year;
+        // Tambahkan parameter page ke view untuk digunakan saat kembali
         return view('smartphones.edit', compact('smartphone', 'currentYear'));
     }
 
@@ -311,7 +345,7 @@ class SmartphoneController extends Controller
         $request->validate($rules);
 
         try {
-            $data = $request->except(['image', '_token', '_method']);
+            $data = $request->except(['image', '_token', '_method', 'page']);
 
             // Proses image jika ada
             if ($request->hasFile('image')) {
@@ -336,7 +370,13 @@ class SmartphoneController extends Controller
             // No need to calculate scores, use the values from the form
             $smartphone->update($data);
 
-            return redirect()->route('smartphones.index')
+            // Clear model cache
+            Cache::forget('smartphones.data.' . md5(json_encode($request->except('_token', '_method', 'image'))));
+
+            // Ambil parameter page untuk kembali ke halaman yang sama
+            $page = $request->input('page', 1);
+
+            return redirect()->route('smartphones.index', ['page' => $page])
                 ->with('success', 'Data smartphone berhasil diperbarui');
         } catch (\Exception $e) {
             return redirect()->back()

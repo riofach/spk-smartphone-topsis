@@ -7,7 +7,8 @@
         <div class="col-md-12" data-aos="fade-up">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="fw-bold text-gradient">Edit Smartphone</h2>
-                <a href="{{ route('smartphones.index') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('smartphones.index', ['page' => request()->query('page', 1)]) }}"
+                    class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-2"></i>Kembali
                 </a>
             </div>
@@ -23,6 +24,7 @@
                         enctype="multipart/form-data" id="smartphoneForm">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" name="page" value="{{ request()->query('page', 1) }}">
                         <div class="row mb-3">
                             <div class="col-md-6" data-aos="fade-right" data-aos-delay="200">
                                 <div class="mb-3">
