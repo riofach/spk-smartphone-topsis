@@ -13,13 +13,14 @@ return new class extends Migration {
         Schema::create('smartphones', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('price');
-            $table->float('camera_score', 4, 2)->comment('Skor kamera (1-10)');
-            $table->float('performance_score', 4, 2)->comment('Skor performa (1-10)');
-            $table->float('design_score', 4, 2)->comment('Skor desain (1-10)');
-            $table->float('battery_score', 4, 2)->comment('Skor baterai (1-10)');
-            $table->text('description')->nullable();
-            $table->string('image')->nullable();
+            $table->decimal('price', 12, 2);
+            $table->string('image_url');
+            $table->text('description');
+            $table->decimal('camera_score', 3, 1);
+            $table->decimal('performance_score', 3, 1);
+            $table->decimal('design_score', 3, 1);
+            $table->decimal('battery_score', 3, 1);
+            $table->year('release_year')->comment('Tahun rilis smartphone');
             $table->timestamps();
         });
     }

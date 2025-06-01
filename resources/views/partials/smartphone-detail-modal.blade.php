@@ -1,0 +1,569 @@
+<!-- Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="background-color: var(--modal-bg, #1a202c); color: var(--text-light, #f3f4f6);">
+            <div class="modal-header border-bottom border-dark">
+                <h5 class="modal-title text-gradient" id="detailModalLabel">Detail Smartphone</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-5 text-center mb-4">
+                        <div class="mb-3">
+                            <ul class="nav nav-tabs justify-content-center" id="detailViewTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="image-tab" data-bs-toggle="tab"
+                                        data-bs-target="#image-view" type="button" role="tab"
+                                        aria-selected="true">Gambar</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="3d-tab" data-bs-toggle="tab"
+                                        data-bs-target="#3d-view" type="button" role="tab"
+                                        aria-selected="false">Model 3D</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content mt-3" id="detailViewTabContent">
+                                <div class="tab-pane fade show active" id="image-view" role="tabpanel">
+                                    <img id="detailImage" src="" alt="Detail Image"
+                                        class="img-fluid rounded shadow" style="max-width: 300px;">
+                                </div>
+                                <div class="tab-pane fade" id="3d-view" role="tabpanel">
+                                    <div class="binkies3d-container position-relative"
+                                        style="height: 300px; width: 100%; border-radius: 0.75rem; overflow: hidden; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <div id="no3dModelMessage"
+                                            class="d-none position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-75">
+                                            <i class="fas fa-cube fa-4x mb-3 text-secondary"></i>
+                                            <h5 class="text-light">Model 3D Tidak Tersedia</h5>
+                                            <p class="text-light text-center px-4">Smartphone ini tidak memiliki model
+                                                3D yang tersedia untuk ditampilkan.</p>
+                                            <span class="badge bg-secondary">Tidak Tersedia</span>
+                                        </div>
+                                        <iframe width="100%" height="100%" id="smartphone3dModel" src=""
+                                            frameborder="0" allowfullscreen></iframe>
+                                        <button type="button" id="expand3dModelBtn"
+                                            class="btn btn-sm btn-dark position-absolute"
+                                            style="top: 10px; right: 10px; opacity: 0.8; z-index: 10;">
+                                            <i class="fas fa-expand"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <h4 id="detailName" class="text-gradient mb-3"></h4>
+                        {{-- <span id="detailBrand" class="badge bg-primary mb-2 d-block mx-auto"
+                            style="max-width: fit-content;"></span> --}}
+                        <h5 id="detailPrice" class="text-warning"></h5>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card mb-3" style="background-color: rgba(31, 41, 55, 0.5);">
+                            <div class="card-header bg-dark">
+                                <h5 class="mb-0 text-white">Visualisasi Skor</h5>
+                            </div>
+                            <div class="card-body text-center p-3">
+                                <canvas id="radarChart" width="250" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card mb-3" style="background-color: rgba(31, 41, 55, 0.5);">
+                            <div class="card-header bg-dark">
+                                <h6 class="mb-0 text-light"><i class="fas fa-info-circle me-2"></i>Informasi Dasar
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <p><i class="fas fa-calendar me-2 text-info"></i><strong>Tahun:</strong> <span
+                                                id="detailYear"></span></p>
+                                        <p><i class="fas fa-memory me-2 text-info"></i><strong>RAM:</strong> <span
+                                                id="detailRam"></span></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p><i class="fas fa-hdd me-2 text-info"></i><strong>Storage:</strong> <span
+                                                id="detailStorage"></span></p>
+                                        <p><i class="fas fa-microchip me-2 text-info"></i><strong>Prosesor:</strong>
+                                            <span id="detailProcessor"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3" style="background-color: rgba(31, 41, 55, 0.5);">
+                            <div class="card-header bg-dark">
+                                <h6 class="mb-0 text-light"><i class="fas fa-chart-bar me-2"></i>Spesifikasi Teknis
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <p><i
+                                                class="fas fa-battery-full me-2 text-success"></i><strong>Baterai:</strong>
+                                            <span id="detailBattery"></span>
+                                        </p>
+                                        <p><i class="fas fa-mobile-alt me-2 text-success"></i><strong>Layar:</strong>
+                                            <span id="detailScreen"></span>
+                                        </p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p><i class="fas fa-camera me-2 text-success"></i><strong>Kamera:</strong>
+                                            <span id="detailCamera"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3" style="background-color: rgba(31, 41, 55, 0.5);">
+                    <div class="card-header bg-dark">
+                        <h6 class="mb-0 text-light"><i class="fas fa-star me-2"></i>Skor Kriterianya</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span><i class="fas fa-camera me-2"></i>Kamera</span>
+                                    <span id="detailCameraScore"></span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div id="detailCameraProgress" class="progress-bar" role="progressbar"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span><i class="fas fa-microchip me-2"></i>Performa</span>
+                                    <span id="detailPerformanceScore"></span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div id="detailPerformanceProgress" class="progress-bar" role="progressbar"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span><i class="fas fa-palette me-2"></i>Desain</span>
+                                    <span id="detailDesignScore"></span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div id="detailDesignProgress" class="progress-bar" role="progressbar"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span><i class="fas fa-battery-full me-2"></i>Baterai</span>
+                                    <span id="detailBatteryScore"></span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div id="detailBatteryProgress" class="progress-bar" role="progressbar"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Fullscreen untuk Model 3D -->
+<div class="modal fade" id="fullscreen3dModal" tabindex="-1" aria-labelledby="fullscreen3dModalLabel"
+    aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content" style="background-color: rgba(0, 0, 0, 0.9);">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-light" id="fullscreen3dModalLabel">Model 3D Smartphone</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex align-items-center justify-content-center p-0">
+                <div class="position-relative" style="width: 100%; height: 90vh;">
+                    <iframe width="100%" height="100%" id="fullscreen3dModelFrame" src=""
+                        frameborder="0" allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+            <div class="modal-footer bg-dark border-0">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                    <i class="fas fa-compress me-2"></i>Tutup Fullscreen
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script untuk modal detail smartphone -->
+@push('scripts')
+    <style>
+        /* Styling untuk tab model 3D */
+        #detailViewTab .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            background-color: rgba(31, 41, 55, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        #detailViewTab .nav-link:hover {
+            color: white;
+            background-color: rgba(109, 40, 217, 0.5);
+        }
+
+        #detailViewTab .nav-link.active {
+            color: white;
+            background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+            border-color: rgba(139, 92, 246, 0.5);
+            font-weight: 500;
+        }
+
+        .spline-viewer-container,
+        .binkies3d-container {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .binkies3d-container iframe {
+            border: none;
+            display: block;
+        }
+
+        #expand3dModelBtn {
+            transition: all 0.2s ease;
+        }
+
+        #expand3dModelBtn:hover {
+            background: linear-gradient(135deg, #6d28d9, #8b5cf6) !important;
+            opacity: 1 !important;
+        }
+
+        .modal-fullscreen {
+            padding: 0;
+        }
+
+        #fullscreen3dModal .modal-content {
+            border: none;
+            border-radius: 0;
+        }
+
+        /* Tambahan styling untuk 3D model badge */
+        .model3d-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 5;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Inisialisasi Radar Chart dan update data
+        let radarChart;
+        let current3dModelUrl = '';
+        let fullscreenModal = null;
+
+        // Expose function untuk digunakan dari luar
+        window.updateSmartphoneDetail = function(smartphone) {
+            console.log('Updating smartphone detail:', smartphone); // Debugging
+
+            // Set data detail smartphone
+            document.getElementById('detailImage').src = smartphone.image_url;
+            document.getElementById('detailName').textContent = smartphone.name;
+            // document.getElementById('detailBrand').textContent = smartphone.brand ||
+            //     'Not specified';
+            document.getElementById('detailPrice').textContent =
+                `Rp ${new Intl.NumberFormat('id-ID').format(smartphone.price)}`;
+            document.getElementById('detailYear').textContent = smartphone.release_year || 'N/A';
+            document.getElementById('detailRam').textContent = smartphone.ram ?
+                `${smartphone.ram} GB` : 'N/A';
+            document.getElementById('detailStorage').textContent = smartphone.storage ?
+                `${smartphone.storage} GB` : 'N/A';
+            document.getElementById('detailBattery').textContent = smartphone.battery ?
+                `${smartphone.battery} mAh` : 'N/A';
+            document.getElementById('detailCamera').textContent = smartphone.camera ?
+                `${smartphone.camera} MP` : 'N/A';
+            document.getElementById('detailScreen').textContent = smartphone.screen_size ?
+                `${smartphone.screen_size} inch` : 'N/A';
+            document.getElementById('detailProcessor').textContent = smartphone.processor || 'N/A';
+
+            // Set 3D model jika tersedia
+            const no3dModelMessage = document.getElementById('no3dModelMessage');
+            const expand3dModelBtn = document.getElementById('expand3dModelBtn');
+            const smartphone3dModel = document.getElementById('smartphone3dModel');
+
+            if (smartphone.model_3d_url) {
+                // Model 3D tersedia
+                smartphone3dModel.src = smartphone.model_3d_url;
+                current3dModelUrl = smartphone.model_3d_url;
+                no3dModelMessage.classList.add('d-none');
+                smartphone3dModel.classList.remove('d-none');
+                expand3dModelBtn.classList.remove('d-none');
+
+                // Tampilkan badge tersedia
+                if (!document.querySelector('.model3d-badge.bg-success')) {
+                    const availableBadge = document.createElement('div');
+                    availableBadge.className = 'model3d-badge bg-success';
+                    availableBadge.innerHTML = '<i class="fas fa-check-circle me-1"></i> Model 3D Tersedia';
+                    document.querySelector('.binkies3d-container').appendChild(availableBadge);
+
+                    // Hapus badge tidak tersedia jika ada
+                    const unavailableBadge = document.querySelector('.model3d-badge.bg-secondary');
+                    if (unavailableBadge) unavailableBadge.remove();
+                }
+            } else {
+                // Model 3D tidak tersedia
+                smartphone3dModel.src = '';
+                current3dModelUrl = '';
+                no3dModelMessage.classList.remove('d-none');
+                smartphone3dModel.classList.add('d-none');
+                expand3dModelBtn.classList.add('d-none');
+
+                // Tampilkan badge tidak tersedia
+                if (!document.querySelector('.model3d-badge.bg-secondary')) {
+                    const unavailableBadge = document.createElement('div');
+                    unavailableBadge.className = 'model3d-badge bg-secondary';
+                    unavailableBadge.innerHTML = '<i class="fas fa-times-circle me-1"></i> Model 3D Tidak Tersedia';
+                    document.querySelector('.binkies3d-container').appendChild(unavailableBadge);
+
+                    // Hapus badge tersedia jika ada
+                    const availableBadge = document.querySelector('.model3d-badge.bg-success');
+                    if (availableBadge) availableBadge.remove();
+                }
+            }
+
+            // Update modal title dengan nama smartphone
+            document.getElementById('fullscreen3dModalLabel').textContent = `Model 3D - ${smartphone.name}`;
+
+            // Pastikan nilai skor ada
+            const cameraScore = parseFloat(smartphone.camera_score || 0);
+            const performanceScore = parseFloat(smartphone.performance_score || 0);
+            const designScore = parseFloat(smartphone.design_score || 0);
+            const batteryScore = parseFloat(smartphone.battery_score || 0);
+
+            // Set badge untuk skor
+            document.getElementById('detailCameraScore').innerHTML =
+                `<span class="badge bg-${getBadgeColor(cameraScore)}">${cameraScore.toFixed(1)}</span>`;
+            document.getElementById('detailPerformanceScore').innerHTML =
+                `<span class="badge bg-${getBadgeColor(performanceScore)}">${performanceScore.toFixed(1)}</span>`;
+            document.getElementById('detailDesignScore').innerHTML =
+                `<span class="badge bg-${getBadgeColor(designScore)}">${designScore.toFixed(1)}</span>`;
+            document.getElementById('detailBatteryScore').innerHTML =
+                `<span class="badge bg-${getBadgeColor(batteryScore)}">${batteryScore.toFixed(1)}</span>`;
+
+            // Set progress bar
+            updateProgressBar('detailCameraProgress', cameraScore);
+            updateProgressBar('detailPerformanceProgress', performanceScore);
+            updateProgressBar('detailDesignProgress', designScore);
+            updateProgressBar('detailBatteryProgress', batteryScore);
+
+            // Inisialisasi atau update Radar Chart
+            if (radarChart) {
+                radarChart.destroy();
+            }
+
+            initRadarChart(smartphone);
+        };
+
+        function initializeDetailButtons() {
+            const detailButtons = document.querySelectorAll('.detail-btn');
+
+            detailButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const smartphone = JSON.parse(this.getAttribute('data-smartphone'));
+                    console.log('Smartphone data:', smartphone); // Debugging
+
+                    window.updateSmartphoneDetail(smartphone);
+                });
+            });
+
+            // Inisialisasi fullscreen modal hanya sekali
+            if (!fullscreenModal) {
+                fullscreenModal = new bootstrap.Modal(document.getElementById('fullscreen3dModal'), {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+            }
+
+            // Setup expand button untuk model 3D
+            document.getElementById('expand3dModelBtn').addEventListener('click', function() {
+                if (current3dModelUrl) {
+                    document.getElementById('fullscreen3dModelFrame').src = current3dModelUrl;
+                    fullscreenModal.show();
+                }
+            });
+
+            // Reset iframe src saat modal ditutup untuk menghindari lag dan pastikan modal ditutup dengan benar
+            const fullscreenModalElement = document.getElementById('fullscreen3dModal');
+            fullscreenModalElement.addEventListener('hidden.bs.modal', function() {
+                document.getElementById('fullscreen3dModelFrame').src = '';
+
+                // Pastikan backdrop dihapus dengan benar
+                setTimeout(() => {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    if (backdrops.length > 1) {
+                        // Hapus backdrop berlebih
+                        for (let i = 1; i < backdrops.length; i++) {
+                            backdrops[i].remove();
+                        }
+                    }
+
+                    // Pastikan body tidak memiliki class modal-open jika tidak ada modal lain yang terbuka
+                    const openModals = document.querySelectorAll('.modal.show');
+                    if (openModals.length === 0 && document.body.classList.contains('modal-open')) {
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    }
+                }, 100);
+            });
+
+            // Tambahkan event listener untuk tombol close di modal fullscreen
+            const closeButtons = fullscreenModalElement.querySelectorAll('[data-bs-dismiss="modal"]');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    fullscreenModal.hide();
+                });
+            });
+        }
+
+        // Inisialisasi Radar Chart
+        function initRadarChart(smartphone) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+
+            // Pastikan nilai skor ada
+            const cameraScore = parseFloat(smartphone.camera_score || 0);
+            const performanceScore = parseFloat(smartphone.performance_score || 0);
+            const designScore = parseFloat(smartphone.design_score || 0);
+            const batteryScore = parseFloat(smartphone.battery_score || 0);
+
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Kamera', 'Performa', 'Desain', 'Baterai'],
+                    datasets: [{
+                        label: 'Skor Smartphone',
+                        data: [
+                            cameraScore,
+                            performanceScore,
+                            designScore,
+                            batteryScore
+                        ],
+                        backgroundColor: 'rgba(109, 40, 217, 0.2)',
+                        borderColor: '#6d28d9',
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#10b981'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            pointLabels: {
+                                color: '#f3f4f6',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                display: false,
+                                max: 10,
+                                min: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    elements: {
+                        line: {
+                            tension: 0.1
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update progress bar
+        function updateProgressBar(id, value) {
+            const progressBar = document.getElementById(id);
+            const percentage = (value / 10) * 100;
+            progressBar.style.width = `${percentage}%`;
+
+            // Set warna progress bar berdasarkan nilai
+            if (value >= 9) {
+                progressBar.className = 'progress-bar bg-success';
+            } else if (value >= 7) {
+                progressBar.className = 'progress-bar bg-primary';
+            } else if (value >= 5) {
+                progressBar.className = 'progress-bar bg-info';
+            } else if (value >= 3) {
+                progressBar.className = 'progress-bar bg-warning';
+            } else {
+                progressBar.className = 'progress-bar bg-danger';
+            }
+        }
+
+        // Fungsi untuk mendapatkan warna berdasarkan nilai skor
+        function getBadgeColor(score) {
+            if (score >= 9) {
+                return 'success';
+            }
+            if (score >= 7) {
+                return 'primary';
+            }
+            if (score >= 5) {
+                return 'info';
+            }
+            if (score >= 3) {
+                return 'warning';
+            }
+            return 'danger';
+        }
+
+        // Panggil fungsi inisialisasi setelah dokumen dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDetailButtons();
+        });
+    </script>
+@endpush
+
+@php
+    function getBadgeColor($score)
+    {
+        if ($score >= 9) {
+            return 'success';
+        }
+        if ($score >= 7) {
+            return 'primary';
+        }
+        if ($score >= 5) {
+            return 'info';
+        }
+        if ($score >= 3) {
+            return 'warning';
+        }
+        return 'danger';
+    }
+@endphp

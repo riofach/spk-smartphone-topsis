@@ -8,17 +8,12 @@
             <h2 class="fw-bold text-gradient">Daftar Smartphone</h2>
             <p class="text-white">Semua smartphone yang tersedia dalam database sistem.</p>
         </div>
-        <div class="col-md-4 text-end" data-aos="fade-left">
-            <a href="{{ route('smartphones.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i> Tambah Smartphone
-            </a>
-        </div>
     </div>
 
     <!-- Search & Filter Section -->
     <div class="card shadow mb-4" data-aos="fade-up">
         <div class="card-body p-4">
-            <form action="{{ route('smartphones.index') }}" method="GET" id="searchFilterForm">
+            <form action="{{ route('list-hp.index') }}" method="GET" id="searchFilterForm">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="search-container position-relative">
@@ -34,12 +29,12 @@
                     <div class="col-md-3">
                         <label for="sort" class="form-label"><i class="fas fa-sort me-2"></i>Urutkan</label>
                         <select class="form-select" id="sort" name="sort" onchange="this.form.submit()">
-                            <option class="text-black" value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>
+                            <option value="latest" class="text-black" {{ request('sort') == 'latest' ? 'selected' : '' }}>
                                 Terbaru</option>
-                            <option class="text-black" value="price_low_high"
+                            <option value="price_low_high" class="text-black"
                                 {{ request('sort') == 'price_low_high' ? 'selected' : '' }}>
                                 Harga: Rendah ke Tinggi</option>
-                            <option class="text-black" value="price_high_low"
+                            <option value="price_high_low" class="text-black"
                                 {{ request('sort') == 'price_high_low' ? 'selected' : '' }}>
                                 Harga: Tinggi ke Rendah</option>
                         </select>
@@ -111,7 +106,7 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end mt-3 gap-2">
-                            <a href="{{ route('smartphones.index') }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('list-hp.index') }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-2"></i>Reset
                             </a>
                             <button type="submit" class="btn btn-primary">
@@ -126,8 +121,8 @@
 
     @if ($smartphones->isEmpty())
         <div class="alert alert-info" data-aos="fade-up">
-            <p><i class="fas fa-info-circle me-2"></i>Tidak ada smartphone yang ditemukan. Coba ubah filter pencarian Anda
-                atau tambahkan data smartphone baru.</p>
+            <p><i class="fas fa-info-circle me-2"></i>Tidak ada smartphone yang ditemukan. Coba ubah filter pencarian Anda.
+            </p>
         </div>
     @else
         <div class="card shadow" data-aos="fade-up">
@@ -155,7 +150,7 @@
                                 <th class="text-center" width="70">
                                     <i class="fas fa-calendar" data-bs-toggle="tooltip" title="Tahun Rilis"></i>
                                 </th>
-                                <th class="text-center" width="120">Aksi</th>
+                                <th class="text-center" width="70">Detail</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -198,20 +193,6 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-2 justify-content-center">
-                                            <a href="{{ route('smartphones.edit', ['smartphone' => $smartphone, 'page' => $smartphones->currentPage()]) }}"
-                                                class="btn btn-sm btn-warning" data-bs-toggle="tooltip"
-                                                title="Edit Smartphone">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{{ route('smartphones.destroy', $smartphone) }}" method="POST"
-                                                class="d-inline delete-form">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" class="btn btn-sm btn-danger delete-btn"
-                                                    data-bs-toggle="tooltip" title="Hapus Smartphone">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
                                             <button class="btn btn-sm btn-primary detail-btn" data-bs-toggle="modal"
                                                 data-bs-target="#detailModal"
                                                 data-smartphone="{{ json_encode($smartphone) }}" title="Lihat Detail">
@@ -233,29 +214,6 @@
         </div>
     @endif
 
-    <!-- Modal Konfirmasi Hapus -->
-    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="deleteConfirmModalLabel">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Konfirmasi Hapus
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-black">
-                    <p>Apakah Anda yakin ingin menghapus smartphone ini? Tindakan ini tidak dapat dibatalkan.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Preview Image Modal -->
     <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel"
         aria-hidden="true">
@@ -274,43 +232,8 @@
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
 
-            // Preview image modal
-            const previewButtons = document.querySelectorAll('.preview-btn');
-            const imagePreviewModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
-            const previewImage = document.getElementById('previewImage');
-            const previewTitle = document.getElementById('previewTitle');
-
-            previewButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const imgSrc = this.getAttribute('data-img');
-                    const imgName = this.getAttribute('data-name');
-
-                    previewImage.src = imgSrc;
-                    previewTitle.textContent = imgName;
-                    imagePreviewModal.show();
-                });
-            });
-
-            // Konfirmasi hapus smartphone
-            const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-            const deleteButtons = document.querySelectorAll('.delete-btn');
-            const deleteForm = document.querySelector('.delete-form');
-            let currentDeleteForm;
-
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    currentDeleteForm = this.closest('form');
-                    deleteConfirmModal.show();
-                });
-            });
-
-            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-                if (currentDeleteForm) {
-                    currentDeleteForm.submit();
-                }
-                deleteConfirmModal.hide();
-            });
+            // Initialize detail buttons
+            initializeDetailButtons();
 
             // Autocomplete search with real-time table update
             const searchInput = document.getElementById('search');
@@ -327,14 +250,14 @@
                 debounceTimer = setTimeout(() => {
                     // Jika query kosong, kembalikan ke tampilan awal
                     if (query === '') {
-                        window.location.href = '{{ route('smartphones.index') }}';
+                        window.location.href = '{{ route('list-hp.index') }}';
                         return;
                     }
 
                     // Show loading indicator
                     tableBody.innerHTML = `
                         <tr>
-                            <td colspan="9" class="text-center py-4">
+                            <td colspan="10" class="text-center py-4">
                                 <div class="spinner-border text-primary" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
@@ -344,7 +267,7 @@
                     `;
 
                     // Fetch filtered results dengan header Accept: application/json
-                    fetch(`{{ route('smartphones.index') }}?query=${encodeURIComponent(query)}`, {
+                    fetch(`{{ route('list-hp.index') }}?search=${encodeURIComponent(query)}`, {
                             method: 'GET',
                             headers: {
                                 'Accept': 'application/json',
@@ -407,7 +330,6 @@
                                         </td>
                                         <td class="fw-medium">${smartphone.name}</td>
                                         <td>Rp ${new Intl.NumberFormat('id-ID').format(smartphone.price)}</td>
-                                        
                                         <td class="text-center">
                                             <span class="badge bg-${getBadgeColor(parseFloat(smartphone.camera_score))}">
                                                 ${parseFloat(smartphone.camera_score).toFixed(1)}
@@ -428,29 +350,16 @@
                                                 ${parseFloat(smartphone.battery_score).toFixed(1)}
                                             </span>
                                         </td>
-                                        <td class="text-center">${smartphone.release_year}</td>
+                                        <td class="text-center">
+                                            ${smartphone.release_year}
+                                        </td>
                                         <td>
                                             <div class="d-flex gap-2 justify-content-center">
-                                                <a href="${smartphone.edit_url}" 
-                                                    class="btn btn-sm btn-warning" 
-                                                    data-bs-toggle="tooltip" 
-                                                    title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <form action="${smartphone.delete_url}" method="POST" class="d-inline delete-form">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button" class="btn btn-sm btn-danger delete-btn" 
-                                                        data-bs-toggle="tooltip" title="Hapus">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
                                                 <button class="btn btn-sm btn-primary detail-btn" data-bs-toggle="modal"
                                                     data-bs-target="#detailModal"
                                                     data-smartphone='${JSON.stringify(smartphone)}' title="Lihat Detail">
                                                     <i class="fas fa-info-circle"></i>
                                                 </button>
-                                                
                                             </div>
                                         </td>
                                     `;
@@ -464,16 +373,15 @@
                                 [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap
                                     .Tooltip(tooltipTriggerEl));
 
-                                // Re-initialize detail buttons and delete confirmation
+                                // Re-initialize detail buttons
                                 initializeDetailButtons();
-                                initializeDeleteButtons();
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
                             tableBody.innerHTML = `
                                 <tr>
-                                    <td colspan="9" class="text-center py-4 text-danger">
+                                    <td colspan="10" class="text-center py-4 text-danger">
                                         <i class="fas fa-exclamation-circle fa-2x mb-3"></i>
                                         <p>Terjadi kesalahan saat memuat data. Silakan coba lagi.</p>
                                         <small class="text-muted">${error.message}</small>
@@ -489,18 +397,45 @@
                 }, 300);
             });
 
-            // Inisialisasi tombol delete
-            function initializeDeleteButtons() {
-                const deleteButtons = document.querySelectorAll('.delete-btn');
+            // Preview image modal
+            const previewButtons = document.querySelectorAll('.preview-btn');
+            const imagePreviewModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+            const previewImage = document.getElementById('previewImage');
+            const previewTitle = document.getElementById('previewTitle');
 
-                deleteButtons.forEach(button => {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        currentDeleteForm = this.closest('form');
-                        deleteConfirmModal.show();
-                    });
+            previewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const imgSrc = this.getAttribute('data-img');
+                    const imgName = this.getAttribute('data-name');
+
+                    previewImage.src = imgSrc;
+                    previewTitle.textContent = imgName;
+                    imagePreviewModal.show();
                 });
+            });
+
+            // Fungsi Go to page
+            window.goToPage = function() {
+                const input = document.getElementById('goToPage');
+                const page = parseInt(input.value);
+                const maxPage = parseInt(input.max);
+
+                if (page && page > 0 && page <= maxPage) {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('page', page);
+                    window.location.href = currentUrl.toString();
+                } else {
+                    alert('Halaman tidak valid!');
+                }
             }
+
+            // Handle Enter key pada input Go to page
+            document.getElementById('goToPage')?.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    goToPage();
+                }
+            });
 
             // Form filters auto-submit
             const autoSubmitElements = document.querySelectorAll('#ram, #storage, #release_year');
@@ -509,24 +444,41 @@
                     document.getElementById('searchFilterForm').submit();
                 });
             });
-
-            // Fungsi helper untuk mendapatkan warna badge dari skor
-            function getBadgeColor(score) {
-                if (score >= 9) {
-                    return 'success';
-                }
-                if (score >= 7) {
-                    return 'primary';
-                }
-                if (score >= 5) {
-                    return 'info';
-                }
-                if (score >= 3) {
-                    return 'warning';
-                }
-                return 'danger';
-            }
         });
+
+        // Fungsi helper untuk mendapatkan warna badge dari skor
+        function getBadgeColor(score) {
+            if (score >= 9) {
+                return 'success';
+            }
+            if (score >= 7) {
+                return 'primary';
+            }
+            if (score >= 5) {
+                return 'info';
+            }
+            if (score >= 3) {
+                return 'warning';
+            }
+            return 'danger';
+        }
+
+        // Function to initialize detail buttons
+        function initializeDetailButtons() {
+            const detailButtons = document.querySelectorAll('.detail-btn');
+
+            detailButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const smartphone = JSON.parse(this.getAttribute('data-smartphone'));
+
+                    // Jika modal detail menggunakan fungsi initializeDetailButtons dari smartphone-detail-modal.blade.php
+                    // maka fungsi ini akan meneruskan ke fungsi yang ada di partials
+                    if (window.updateSmartphoneDetail) {
+                        window.updateSmartphoneDetail(smartphone);
+                    }
+                });
+            });
+        }
     </script>
 @endsection
 

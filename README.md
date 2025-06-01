@@ -12,6 +12,7 @@ Sistem Pendukung Keputusan (SPK) untuk membantu memilih smartphone berdasarkan b
 
 -   [Fitur](#fitur)
 -   [Teknologi](#teknologi)
+-   [Optimasi Performa & SEO](#optimasi-performa--seo)
 -   [Cara Instalasi](#cara-instalasi)
 -   [Penggunaan](#penggunaan)
 -   [Penjelasan Metode TOPSIS](#penjelasan-metode-topsis)
@@ -25,6 +26,14 @@ Sistem Pendukung Keputusan (SPK) untuk membantu memilih smartphone berdasarkan b
 -   Manajemen data smartphone (tambah, edit, hapus)
 -   Upload gambar smartphone
 -   Peringkat rekomendasi dengan tampilan visual
+-   Manajemen data smartphone (CRUD)
+-   Rekomendasi smartphone menggunakan metode TOPSIS berdasarkan preferensi pengguna
+-   Penyimpanan gambar fleksibel (lokal atau Supabase)
+-   Tampilan top 3 rekomendasi dengan ribbon khusus
+-   Pembersihan otomatis smartphone yang sudah lebih dari 2 tahun
+-   Pagination untuk tampilan daftar smartphone
+-   Performa tinggi dengan caching dan optimasi SEO
+-   Sitemap otomatis untuk meningkatkan indeksasi di mesin pencari
 
 ## Teknologi
 
@@ -33,6 +42,61 @@ Sistem Pendukung Keputusan (SPK) untuk membantu memilih smartphone berdasarkan b
 -   PostgreSQL
 -   Bootstrap 5
 -   JavaScript/jQuery
+-   Cache System Laravel
+-   Lazy Loading Images
+-   Browser Caching & GZIP Compression
+
+## Optimasi Performa & SEO
+
+Aplikasi ini telah dioptimasi untuk performa dan SEO dengan fitur-fitur berikut:
+
+### Optimasi SEO
+
+1. **Meta Tags yang Lengkap**
+
+    - Meta description, keywords, dan author
+    - Open Graph dan Twitter Card untuk sharing di sosial media
+    - Canonical URL untuk mencegah konten duplikat
+
+2. **Data Terstruktur (Schema.org)**
+
+    - Markup data terstruktur untuk meningkatkan tampilan di hasil pencarian
+    - Informasi website dengan action search
+
+3. **Robots.txt & Sitemap**
+    - Konfigurasi robots.txt untuk kontrol web crawler
+    - Sitemap.xml otomatis yang diperbarui setiap 6 jam
+    - URL prioritas sesuai kepentingan halaman
+
+### Optimasi Performa
+
+1. **Sistem Caching**
+
+    - Model caching untuk mengurangi query database (dengan auto-invalidation)
+    - Cache untuk hasil pencarian dan filter
+    - Data caching sebagai pengganti view caching (menghindari serialisasi closure)
+
+2. **Optimasi Asset**
+
+    - Lazy loading untuk gambar menggunakan Intersection Observer
+    - JavaScript dengan atribut defer untuk mencegah blocking rendering
+    - Preconnect ke domain eksternal
+
+3. **Server Optimization**
+
+    - Browser caching dengan konfigurasi .htaccess
+    - GZIP compression untuk mengurangi ukuran transfer
+    - Cache headers untuk jenis file berbeda
+
+4. **Task Scheduling**
+
+    - Pembersihan cache otomatis terjadwal
+    - Regenerasi sitemap secara periodik
+    - Health check untuk memastikan website selalu online
+
+5. **Command Kustom**
+    - `php artisan cache:smartclear` untuk pembersihan cache
+    - Pilihan pembersihan cache model, view, atau sitemap
 
 ## Cara Instalasi
 
@@ -94,13 +158,21 @@ Berikut langkah-langkah untuk menginstal dan menjalankan proyek:
     mkdir -p public/images/smartphones
     ```
 
-8. **Jalankan server development**
+8. **Optimalkan aplikasi**
+
+    ```bash
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+    ```
+
+9. **Jalankan server development**
 
     ```bash
     php artisan serve
     ```
 
-9. **Akses aplikasi**
+10. **Akses aplikasi**
 
     Buka browser dan kunjungi `http://localhost:8000`
 
@@ -115,9 +187,15 @@ Berikut langkah-langkah untuk menginstal dan menjalankan proyek:
 ### Admin
 
 1. **Manajemen Smartphone**:
+
     - Lihat daftar smartphone: `/smartphones`
     - Tambah smartphone (URL tersembunyi): `/admin-add-smartphone`
     - Edit dan hapus smartphone
+
+2. **Maintenance**:
+    - Bersihkan cache: `php artisan cache:smartclear`
+    - Regenerasi sitemap: `php artisan cache:smartclear --sitemap`
+    - Bersihkan cache model: `php artisan cache:smartclear --model`
 
 ## Penjelasan Metode TOPSIS
 
@@ -189,15 +267,31 @@ TOPSIS (Technique for Order Preference by Similarity to Ideal Solution) adalah m
 ## Struktur Direktori
 
 -   `app/Http/Controllers/SmartphoneController.php`: Controller untuk manajemen smartphone dan rekomendasi
--   `app/Models/Smartphone.php`: Model untuk data smartphone
+-   `app/Models/Smartphone.php`: Model untuk data smartphone dengan caching
 -   `app/Models/Criteria.php`: Model untuk kriteria penilaian
 -   `app/Services/TopsisService.php`: Implementasi algoritma TOPSIS
+-   `app/Console/Commands/CacheClearCommand.php`: Command untuk membersihkan cache
+-   `app/Console/Kernel.php`: Konfigurasi scheduled tasks
 -   `database/migrations/`: Migrasi database
 -   `database/seeders/`: Seeder untuk data awal
 -   `resources/views/smartphones/`: Tampilan untuk manajemen smartphone
 -   `resources/views/smartphones/recommendation.blade.php`: Form rekomendasi
 -   `resources/views/smartphones/recommendation-results.blade.php`: Hasil rekomendasi
 -   `public/images/smartphones/`: Penyimpanan gambar smartphone
+-   `public/robots.txt`: Konfigurasi web crawler
+-   `public/.htaccess`: Konfigurasi cache browser dan GZIP
+
+## Penyimpanan Gambar
+
+Aplikasi mendukung dua model penyimpanan gambar:
+
+1. **Penyimpanan Lokal** - Default, menyimpan gambar di direktori public/images
+2. **Supabase Storage** - Penyimpanan cloud yang menskalakan dengan lebih baik
+
+Untuk konfigurasi dan migrasi ke Supabase, lihat:
+
+-   [Panduan Supabase](README-SUPABASE.md) - Petunjuk integrasi dengan Supabase
+-   [Panduan Migrasi](README-MIGRATION.md) - Cara memigrasikan gambar dari lokal ke Supabase
 
 ---
 

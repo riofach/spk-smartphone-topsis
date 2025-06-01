@@ -4,115 +4,497 @@
 
 @section('content')
     <div class="row">
-        <div class="col-md-12">
-            <h2>Tambah Smartphone Baru</h2>
+        <div class="col-md-12" data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="fw-bold text-gradient">Tambah Smartphone Baru</h2>
+                <a href="{{ route('smartphones.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Kembali
+                </a>
+            </div>
             <hr>
         </div>
     </div>
 
     <div class="row">
-        <div class="col-md-12">
-            <form action="{{ route('smartphones.store') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Nama Smartphone <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
-                                name="name" value="{{ old('name') }}" required>
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+        <div class="col-md-12" data-aos="fade-up" data-aos-delay="100">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <form action="{{ route('smartphones.store') }}" method="POST" enctype="multipart/form-data"
+                        id="smartphoneForm">
+                        @csrf
+                        <div class="row mb-3">
+                            <div class="col-md-6" data-aos="fade-right" data-aos-delay="200">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">
+                                        <i class="fas fa-mobile-alt me-2"></i>Nama Smartphone <span
+                                            class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror"
+                                        id="name" name="name" value="{{ old('name') }}" required>
+                                    @error('name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="price" class="form-label">
+                                        <i class="fas fa-tag me-2"></i>Harga (Rp) <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" class="form-control @error('price') is-invalid @enderror"
+                                            id="price" name="price" value="{{ old('price') }}" min="0"
+                                            required>
+                                    </div>
+                                    @error('price')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="image" class="form-label">Gambar Smartphone <span
+                                            class="text-danger">*</span></label>
+                                    <input type="file" class="form-control @error('image') is-invalid @enderror"
+                                        id="image" name="image" accept="image/png" required>
+                                    <div id="imageHelp" class="form-text text-warning">Pilih gambar smartphone (format PNG,
+                                        maks. 2MB).</div>
+                                    @error('image')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                    <div class="mt-2">
+                                        <div class="image-preview-container">
+                                            <img id="imagePreview" src="{{ asset('images/no-image.png') }}" alt="Preview"
+                                                class="img-thumbnail" style="max-height: 200px; max-width: 200px;">
+                                            <span class="badge bg-secondary image-preview-badge d-none">Preview</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="model_3d_url" class="form-label">
+                                        <i class="fas fa-cube me-2"></i>URL Model 3D Binkies
+                                    </label>
+                                    <input type="url" class="form-control @error('model_3d_url') is-invalid @enderror"
+                                        id="model_3d_url" name="model_3d_url" value="{{ old('model_3d_url') }}">
+                                    <div class="form-text text-warning">
+                                        Masukkan URL embed Binkies3D untuk model 3D smartphone ini.
+                                    </div>
+                                    @error('model_3d_url')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label for="description" class="form-label">Deskripsi</label>
+                                    <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
+                                        rows="4" required>{{ old('description') }}</textarea>
+                                    @error('description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label for="release_year" class="form-label">Tahun Rilis</label>
+                                    <select class="form-select @error('release_year') is-invalid @enderror"
+                                        id="release_year" name="release_year" required>
+                                        <option value="" selected disabled>-- Pilih Tahun Rilis --</option>
+                                        @for ($year = $currentYear; $year >= $currentYear - 2; $year--)
+                                            <option value="{{ $year }}"
+                                                {{ old('release_year') == $year ? 'selected' : '' }}>{{ $year }}
+                                            </option>
+                                        @endfor
+                                    </select>
+                                    <div class="form-text text-warning">
+                                        <i class="fas fa-info-circle"></i> Hanya smartphone dengan tahun rilis maksimal 2
+                                        tahun terakhir yang dapat ditambahkan.
+                                    </div>
+                                    @error('release_year')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="card mb-4">
+                                    <div class="card-header bg-dark">
+                                        <h5 class="mb-0 text-gradient">Spesifikasi Teknis</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="ram" class="form-label">
+                                                        <i class="fas fa-memory me-2"></i>RAM (GB) <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number"
+                                                        class="form-control @error('ram') is-invalid @enderror"
+                                                        id="ram" name="ram" value="{{ old('ram') }}"
+                                                        min="1" required>
+                                                    @error('ram')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="storage" class="form-label">
+                                                        <i class="fas fa-hdd me-2"></i>Storage (GB) <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number"
+                                                        class="form-control @error('storage') is-invalid @enderror"
+                                                        id="storage" name="storage" value="{{ old('storage') }}"
+                                                        min="8" required>
+                                                    @error('storage')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="processor" class="form-label">
+                                                <i class="fas fa-microchip me-2"></i>Processor <span
+                                                    class="text-danger">*</span>
+                                            </label>
+                                            <input type="text"
+                                                class="form-control @error('processor') is-invalid @enderror"
+                                                id="processor" name="processor" value="{{ old('processor') }}" required>
+                                            @error('processor')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="battery" class="form-label">
+                                                        <i class="fas fa-battery-full me-2"></i>Baterai (mAh) <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number"
+                                                        class="form-control @error('battery') is-invalid @enderror"
+                                                        id="battery" name="battery" value="{{ old('battery') }}"
+                                                        min="1000" required>
+                                                    @error('battery')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="camera" class="form-label">
+                                                        <i class="fas fa-camera me-2"></i>Kamera (MP) <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number"
+                                                        class="form-control @error('camera') is-invalid @enderror"
+                                                        id="camera" name="camera" value="{{ old('camera') }}"
+                                                        min="5" required>
+                                                    @error('camera')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="screen_size" class="form-label">
+                                                        <i class="fas fa-mobile-alt me-2"></i>Ukuran Layar (inch) <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number" step="0.1"
+                                                        class="form-control @error('screen_size') is-invalid @enderror"
+                                                        id="screen_size" name="screen_size"
+                                                        value="{{ old('screen_size') }}" min="3" max="10"
+                                                        required>
+                                                    @error('screen_size')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" data-aos="fade-left" data-aos-delay="300">
+                                <div class="card mb-4">
+                                    <div class="card-header bg-dark">
+                                        <h5 class="mb-0 text-gradient">Skor Kriteria</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="camera_score" class="form-label">
+                                                <i class="fas fa-camera me-2"></i>Skor Kamera (1-10) <span
+                                                    class="text-danger">*</span>
+                                            </label>
+                                            <div class="d-flex gap-3 align-items-center">
+                                                <input type="range" class="form-range flex-grow-1" min="0"
+                                                    max="10" step="0.1" id="camera_score_range"
+                                                    value="{{ old('camera_score', 5) }}"
+                                                    oninput="updateScore('camera_score', this.value)">
+                                                <input type="number"
+                                                    class="form-control @error('camera_score') is-invalid @enderror"
+                                                    id="camera_score" name="camera_score"
+                                                    value="{{ old('camera_score', 5) }}" min="0" max="10"
+                                                    step="0.1" style="width: 80px;"
+                                                    oninput="updateScoreRange('camera_score', this.value)" required>
+                                            </div>
+                                            <div class="progress mt-2" style="height: 5px;">
+                                                <div id="camera_score_progress" class="progress-bar" role="progressbar"
+                                                    style="width: 50%;" aria-valuenow="5" aria-valuemin="0"
+                                                    aria-valuemax="10"></div>
+                                            </div>
+                                            @error('camera_score')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="performance_score" class="form-label">
+                                                <i class="fas fa-microchip me-2"></i>Skor Performa (1-10) <span
+                                                    class="text-danger">*</span>
+                                            </label>
+                                            <div class="d-flex gap-3 align-items-center">
+                                                <input type="range" class="form-range flex-grow-1" min="0"
+                                                    max="10" step="0.1" id="performance_score_range"
+                                                    value="{{ old('performance_score', 5) }}"
+                                                    oninput="updateScore('performance_score', this.value)">
+                                                <input type="number"
+                                                    class="form-control @error('performance_score') is-invalid @enderror"
+                                                    id="performance_score" name="performance_score"
+                                                    value="{{ old('performance_score', 5) }}" min="0"
+                                                    max="10" step="0.1" style="width: 80px;"
+                                                    oninput="updateScoreRange('performance_score', this.value)" required>
+                                            </div>
+                                            <div class="progress mt-2" style="height: 5px;">
+                                                <div id="performance_score_progress" class="progress-bar"
+                                                    role="progressbar" style="width: 50%;" aria-valuenow="5"
+                                                    aria-valuemin="0" aria-valuemax="10"></div>
+                                            </div>
+                                            @error('performance_score')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="design_score" class="form-label">
+                                                <i class="fas fa-palette me-2"></i>Skor Desain (1-10) <span
+                                                    class="text-danger">*</span>
+                                            </label>
+                                            <div class="d-flex gap-3 align-items-center">
+                                                <input type="range" class="form-range flex-grow-1" min="0"
+                                                    max="10" step="0.1" id="design_score_range"
+                                                    value="{{ old('design_score', 5) }}"
+                                                    oninput="updateScore('design_score', this.value)">
+                                                <input type="number"
+                                                    class="form-control @error('design_score') is-invalid @enderror"
+                                                    id="design_score" name="design_score"
+                                                    value="{{ old('design_score', 5) }}" min="0" max="10"
+                                                    step="0.1" style="width: 80px;"
+                                                    oninput="updateScoreRange('design_score', this.value)" required>
+                                            </div>
+                                            <div class="progress mt-2" style="height: 5px;">
+                                                <div id="design_score_progress" class="progress-bar" role="progressbar"
+                                                    style="width: 50%;" aria-valuenow="5" aria-valuemin="0"
+                                                    aria-valuemax="10"></div>
+                                            </div>
+                                            @error('design_score')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="battery_score" class="form-label">
+                                                <i class="fas fa-battery-full me-2"></i>Skor Baterai (1-10) <span
+                                                    class="text-danger">*</span>
+                                            </label>
+                                            <div class="d-flex gap-3 align-items-center">
+                                                <input type="range" class="form-range flex-grow-1" min="0"
+                                                    max="10" step="0.1" id="battery_score_range"
+                                                    value="{{ old('battery_score', 5) }}"
+                                                    oninput="updateScore('battery_score', this.value)">
+                                                <input type="number"
+                                                    class="form-control @error('battery_score') is-invalid @enderror"
+                                                    id="battery_score" name="battery_score"
+                                                    value="{{ old('battery_score', 5) }}" min="0" max="10"
+                                                    step="0.1" style="width: 80px;"
+                                                    oninput="updateScoreRange('battery_score', this.value)" required>
+                                            </div>
+                                            <div class="progress mt-2" style="height: 5px;">
+                                                <div id="battery_score_progress" class="progress-bar" role="progressbar"
+                                                    style="width: 50%;" aria-valuenow="5" aria-valuemin="0"
+                                                    aria-valuemax="10"></div>
+                                            </div>
+                                            @error('battery_score')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card radar-chart-card">
+                                    <div class="card-header bg-dark">
+                                        <h5 class="mb-0 text-gradient">Visualisasi Skor</h5>
+                                    </div>
+                                    <div class="card-body text-center p-4">
+                                        <canvas id="radarChart" width="250" height="250"></canvas>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="price" class="form-label">Harga (Rp) <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control @error('price') is-invalid @enderror" id="price"
-                                name="price" value="{{ old('price') }}" min="0" required>
-                            @error('price')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="row" data-aos="fade-up">
+                            <div class="col-md-12 text-center">
+                                <button type="submit" class="btn btn-primary btn-lg px-4 py-2">
+                                    <i class="fas fa-save me-2"></i> Simpan Smartphone
+                                </button>
+                            </div>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="image" class="form-label">Gambar (PNG, Maks. 1MB)</label>
-                            <input type="file" class="form-control @error('image') is-invalid @enderror" id="image"
-                                name="image" accept=".png">
-                            @error('image')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="text-muted">Format yang diizinkan: PNG dengan ukuran maksimal 1MB</small>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="camera_score" class="form-label">Skor Kamera (1-10) <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" step="0.1" min="0" max="10"
-                                class="form-control @error('camera_score') is-invalid @enderror" id="camera_score"
-                                name="camera_score" value="{{ old('camera_score') }}" required>
-                            @error('camera_score')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="performance_score" class="form-label">Skor Performa (1-10) <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" step="0.1" min="0" max="10"
-                                class="form-control @error('performance_score') is-invalid @enderror" id="performance_score"
-                                name="performance_score" value="{{ old('performance_score') }}" required>
-                            @error('performance_score')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="design_score" class="form-label">Skor Desain (1-10) <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" step="0.1" min="0" max="10"
-                                class="form-control @error('design_score') is-invalid @enderror" id="design_score"
-                                name="design_score" value="{{ old('design_score') }}" required>
-                            @error('design_score')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="battery_score" class="form-label">Skor Baterai (1-10) <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" step="0.1" min="0" max="10"
-                                class="form-control @error('battery_score') is-invalid @enderror" id="battery_score"
-                                name="battery_score" value="{{ old('battery_score') }}" required>
-                            @error('battery_score')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
+                    </form>
                 </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Deskripsi</label>
-                            <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
-                                rows="4">{{ old('description') }}</textarea>
-                            @error('description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                        <a href="{{ route('smartphones.index') }}" class="btn btn-secondary">Kembali</a>
-                    </div>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Preview gambar saat dipilih
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validasi format file
+                if (!file.type.match('image/png')) {
+                    alert('Hanya file PNG yang diizinkan');
+                    this.value = ''; // Reset input
+                    return;
+                }
+
+                // Validasi ukuran file
+                if (file.size > 2 * 1024 * 1024) { // 2MB
+                    alert('Ukuran file maksimal adalah 2MB');
+                    this.value = ''; // Reset input
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+
+                    // Tampilkan badge preview
+                    const badge = document.querySelector('.image-preview-badge');
+                    badge.textContent = 'Preview';
+                    badge.classList.remove('d-none');
+                    badge.classList.remove('bg-info');
+                    badge.classList.add('bg-secondary');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Update score when range is changed
+        function updateScore(fieldId, value) {
+            document.getElementById(fieldId).value = value;
+            updateScoreProgress(fieldId, value);
+            updateRadarChart();
+        }
+
+        // Update range when score is changed
+        function updateScoreRange(fieldId, value) {
+            document.getElementById(fieldId + '_range').value = value;
+            updateScoreProgress(fieldId, value);
+            updateRadarChart();
+        }
+
+        // Update progress bar
+        function updateScoreProgress(fieldId, value) {
+            const progressBar = document.getElementById(fieldId + '_progress');
+            const percentage = (value / 10) * 100;
+            progressBar.style.width = percentage + '%';
+            progressBar.setAttribute('aria-valuenow', value);
+        }
+
+        // Radar Chart
+        let radarChart;
+
+        function initRadarChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+
+            const cameraScore = parseFloat(document.getElementById('camera_score').value || 0);
+            const performanceScore = parseFloat(document.getElementById('performance_score').value || 0);
+            const designScore = parseFloat(document.getElementById('design_score').value || 0);
+            const batteryScore = parseFloat(document.getElementById('battery_score').value || 0);
+
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Kamera', 'Performa', 'Desain', 'Baterai'],
+                    datasets: [{
+                        label: 'Skor Smartphone',
+                        data: [cameraScore, performanceScore, designScore, batteryScore],
+                        backgroundColor: 'rgba(109, 40, 217, 0.2)',
+                        borderColor: '#6d28d9',
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#10b981'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            pointLabels: {
+                                color: '#f3f4f6'
+                            },
+                            ticks: {
+                                display: false,
+                                max: 10,
+                                min: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    animation: {
+                        duration: 500
+                    }
+                }
+            });
+        }
+
+        function updateRadarChart() {
+            if (!radarChart) return;
+
+            const cameraScore = parseFloat(document.getElementById('camera_score').value || 0);
+            const performanceScore = parseFloat(document.getElementById('performance_score').value || 0);
+            const designScore = parseFloat(document.getElementById('design_score').value || 0);
+            const batteryScore = parseFloat(document.getElementById('battery_score').value || 0);
+
+            radarChart.data.datasets[0].data = [cameraScore, performanceScore, designScore, batteryScore];
+            radarChart.update();
+        }
+
+        // Initialize everything when document is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize progress bars
+            updateScoreProgress('camera_score', document.getElementById('camera_score').value);
+            updateScoreProgress('performance_score', document.getElementById('performance_score').value);
+            updateScoreProgress('design_score', document.getElementById('design_score').value);
+            updateScoreProgress('battery_score', document.getElementById('battery_score').value);
+
+            // Initialize Radar Chart
+            initRadarChart();
+        });
+    </script>
 @endsection
