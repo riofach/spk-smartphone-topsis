@@ -26,7 +26,8 @@ class ListHpController extends Controller
 
         // Ambil data dari cache atau database
         $data = Cache::remember($cacheKey, 3600, function () use ($request) {
-            $query = Smartphone::withinTwoYears();
+            // Mulai dengan query dasar tanpa filter tahun
+            $query = Smartphone::query();
 
             // Pencarian berdasarkan nama atau processor (untuk non-AJAX)
             if ($request->has('search')) {
@@ -112,7 +113,8 @@ class ListHpController extends Controller
 
         // Ambil data dari cache atau database
         $smartphones = Cache::remember($ajaxCacheKey, 60, function () use ($request) {
-            $query = Smartphone::withinTwoYears();
+            // Mulai dengan query dasar tanpa filter tahun
+            $query = Smartphone::query();
 
             $searchTerm = $request->input('search');
             if ($searchTerm) {
