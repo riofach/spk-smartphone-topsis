@@ -11,6 +11,10 @@ class ListHpController extends Controller
 {
     public function index(Request $request)
     {
+        // Hapus cache untuk memastikan data terbaru
+        $cacheKey = 'list-hp.data.' . md5(json_encode($request->all()));
+        Cache::forget($cacheKey);
+
         // Pencarian real-time untuk AJAX
         if ($request->ajax() || $request->wantsJson()) {
             return $this->handleAjaxRequest($request);
@@ -21,15 +25,12 @@ class ListHpController extends Controller
             return $this->handleSuggestions($request);
         }
 
-        // Key cache untuk data
-        $cacheKey = 'list-hp.data.' . md5(json_encode($request->all()));
-
-        // Ambil data dari cache atau database
+        // Ambil data dari database
         $data = Cache::remember($cacheKey, 3600, function () use ($request) {
             // Mulai dengan query dasar tanpa filter tahun
             $query = Smartphone::query();
 
-            // Pencarian berdasarkan nama atau processor (untuk non-AJAX)
+            // Pencarian berdasarkan nama
             if ($request->has('search')) {
                 $searchTerm = $request->search;
                 $query->where(function ($q) use ($searchTerm) {
@@ -108,10 +109,11 @@ class ListHpController extends Controller
             'wants_json' => $request->wantsJson()
         ]);
 
-        // Buat cache key khusus untuk AJAX request
+        // Hapus cache AJAX untuk memastikan data terbaru
         $ajaxCacheKey = 'list-hp.ajax.' . md5(json_encode($request->all()));
+        Cache::forget($ajaxCacheKey);
 
-        // Ambil data dari cache atau database
+        // Ambil data dari database
         $smartphones = Cache::remember($ajaxCacheKey, 60, function () use ($request) {
             // Mulai dengan query dasar tanpa filter tahun
             $query = Smartphone::query();
@@ -193,6 +195,7 @@ class ListHpController extends Controller
     private function handleSuggestions(Request $request)
     {
         $suggestCacheKey = 'list-hp.suggest.' . $request->suggest;
+        Cache::forget($suggestCacheKey);
 
         $suggestions = Cache::remember($suggestCacheKey, 60, function () use ($request) {
             return Smartphone::where('name', 'like', '%' . $request->suggest . '%')
