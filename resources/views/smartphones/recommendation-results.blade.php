@@ -31,12 +31,12 @@
                         <div class="col-md-8">
                             <p class="mb-1"><strong><i class="fas fa-sliders-h me-2"></i>Bobot Kriteria:</strong></p>
                             <div class="row">
-                                @foreach ($criteria_weights as $code => $weight)
+                                @foreach ($criteria as $criterion)
                                     <div class="col-md-3 mb-2">
                                         <span class="badge bg-primary p-2">
                                             <i
-                                                class="fas fa-{{ $code == 'camera' ? 'camera' : ($code == 'performance' ? 'microchip' : ($code == 'design' ? 'palette' : 'battery-full')) }} me-1"></i>
-                                            {{ ucfirst($code) }}: {{ $weight }}
+                                                class="fas fa-{{ $criterion->code == 'camera' ? 'camera' : ($criterion->code == 'performance' ? 'microchip' : ($criterion->code == 'design' ? 'palette' : 'battery-full')) }} me-1"></i>
+                                            {{ $criterion->name }}: {{ $criteria_weights[$criterion->code] ?? 5 }}
                                         </span>
                                     </div>
                                 @endforeach

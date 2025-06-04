@@ -58,6 +58,16 @@ class Smartphone extends Model
         static::deleted(function () {
             self::clearModelCache();
         });
+
+        // Clear cache when model is created
+        static::created(function () {
+            self::clearModelCache();
+        });
+
+        // Clear cache when model is updated
+        static::updated(function () {
+            self::clearModelCache();
+        });
     }
 
     /**
@@ -72,6 +82,17 @@ class Smartphone extends Model
         Cache::forget('smartphones.ram_options');
         Cache::forget('smartphones.storage_options');
         Cache::forget('smartphones.release_year_options');
+
+        // Hapus semua cache list-hp
+        $cacheKeys = Cache::get('list-hp.cache_keys', []);
+        foreach ($cacheKeys as $key) {
+            Cache::forget($key);
+        }
+
+        // Hapus cache dengan prefix list-hp secara manual
+        foreach (['list-hp.data', 'list-hp.ajax', 'list-hp.suggest'] as $prefix) {
+            Cache::forget($prefix);
+        }
     }
 
     /**
@@ -102,6 +123,9 @@ class Smartphone extends Model
      */
     public static function getCachedFilterOptions()
     {
+        // Hapus cache filter options untuk memastikan data terbaru
+        Cache::forget('smartphones.filters');
+
         return Cache::remember('smartphones.filters', 3600, function () {
             return [
                 'ram_options' => self::select('ram')->distinct()->orderBy('ram')->pluck('ram'),

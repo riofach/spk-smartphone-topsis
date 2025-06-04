@@ -423,8 +423,57 @@ class SmartphoneController extends Controller
      */
     public function recommendationForm()
     {
+        // Ambil data kriteria dari database
         $criteria = Criteria::all();
+
+        // Jika tidak ada kriteria, buat kriteria default
+        if ($criteria->isEmpty()) {
+            $this->createDefaultCriteria();
+            $criteria = Criteria::all();
+        }
+
         return view('smartphones.recommendation', compact('criteria'));
+    }
+
+    /**
+     * Membuat kriteria default jika tidak ada di database
+     */
+    private function createDefaultCriteria()
+    {
+        $defaultCriteria = [
+            [
+                'name' => 'Kamera',
+                'code' => 'camera',
+                'weight' => 1.0,
+                'type' => 'benefit',
+                'description' => 'Kualitas kamera smartphone',
+            ],
+            [
+                'name' => 'Performa',
+                'code' => 'performance',
+                'weight' => 1.0,
+                'type' => 'benefit',
+                'description' => 'Performa dan kecepatan smartphone',
+            ],
+            [
+                'name' => 'Desain',
+                'code' => 'design',
+                'weight' => 1.0,
+                'type' => 'benefit',
+                'description' => 'Desain dan build quality smartphone',
+            ],
+            [
+                'name' => 'Baterai',
+                'code' => 'battery',
+                'weight' => 1.0,
+                'type' => 'benefit',
+                'description' => 'Kapasitas dan daya tahan baterai smartphone',
+            ],
+        ];
+
+        foreach ($defaultCriteria as $criterion) {
+            Criteria::create($criterion);
+        }
     }
 
     /**
@@ -436,7 +485,7 @@ class SmartphoneController extends Controller
             'min_budget' => 'required|integer|min:0',
             'max_budget' => 'required|integer|min:0|gt:min_budget',
             'criteria_weights' => 'required|array',
-            'criteria_weights.*' => 'required|numeric|min:0|max:10',
+            'criteria_weights.*' => 'required|numeric|min:1|max:10',
         ]);
 
         if ($validator->fails()) {
@@ -445,20 +494,21 @@ class SmartphoneController extends Controller
                 ->withInput();
         }
 
+        // Ambil semua kriteria untuk ditampilkan di hasil
+        $criteria = Criteria::all();
+
         $recommendations = $this->topsisService->getRecommendation(
             $request->min_budget,
             $request->max_budget,
             $request->criteria_weights
         );
 
-        // Batasi hanya 6 rekomendasi teratas
-        // $recommendations = $recommendations->take(6);
-
         return view('smartphones.recommendation-results', [
             'recommendations' => $recommendations,
             'min_budget' => $request->min_budget,
             'max_budget' => $request->max_budget,
             'criteria_weights' => $request->criteria_weights,
+            'criteria' => $criteria,
         ]);
     }
 
